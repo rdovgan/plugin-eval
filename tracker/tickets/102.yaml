@@ -1,0 +1,21 @@
+number: 102
+category: clear-standard
+type: story
+state: open
+title: Limit booking length to 30 nights
+labels: [feature, bookings]
+created: 2026-10-05T08:00:00Z
+author: product-manager
+body: |
+  Partners send bookings of 90+ nights by mistake and we cannot price them correctly.
+  Limit the length of a booking.
+
+  Acceptance criteria:
+  1. `POST /bookings` with more than 30 nights is rejected with HTTP 400 and the message
+     `Booking cannot exceed 30 nights`.
+  2. The limit is configurable with the property `booking.max-nights`, default `30`.
+  3. A rejected request is logged at WARN with the partner id; no guest personal data in the log.
+  4. Unit tests cover 30 nights (accepted) and 31 nights (rejected).
+
+  Existing bookings longer than 30 nights in the `booking` table stay valid; do not migrate them.
+comments: []

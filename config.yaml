@@ -1,0 +1,46 @@
+# Плагіни під тестом. Версії (теги, гілки, коміти) беруться з git-репозиторію `repo`.
+plugins:
+  java-developer:
+    repo: ~/Desktop/projects/claude-plugins
+    subdir: plugins/java-developer
+    allow_tools: [Write, Edit]
+  java-analyst:
+    repo: ~/Desktop/projects/claude-plugins
+    subdir: plugins/java-analyst
+    allow_tools: [Write, Edit]
+  qa-docs:
+    repo: ~/Desktop/projects/claude-plugins
+    subdir: plugins/qa-docs
+    allow_tools: [Write, Edit]
+
+# Тека всередині робочої копії плагіна, куди копіюються кейси і моки.
+eval_dir_name: pe-evals
+
+runs: 1
+# Паралельні запуски агента (1-8). Усі йдуть з вашого логіну і ділять один rate limit.
+concurrency: 3
+judge_model: haiku
+timeout_per_invocation_sec: 7200
+
+budget:
+  per_invocation_usd: 20   # на один виклик evalkit.run
+  per_day_usd: 50          # сума за календарний день за журналом results/ledger.jsonl
+
+# Хуки java-developer після правки коду запускають `mvn test`. У прогоні HOME тимчасовий, тому
+# синтетичний проєкт збирається офлайн з цього локального репозиторію Maven.
+maven_repo_local: ~/.m2/repository
+
+models:
+  sonnet:
+    model: claude-sonnet-5-5
+  haiku:
+    model: claude-haiku-5-5
+  glm:
+    model: glm-4.6
+    env:                     # значення ${VAR} беруться з оточення або .env
+      ANTHROPIC_BASE_URL: ${GLM_BASE_URL}
+      ANTHROPIC_AUTH_TOKEN: ${GLM_TOKEN}
+
+smoke:
+  tags: [smoke]
+  runs: 1

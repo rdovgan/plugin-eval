@@ -1,0 +1,19 @@
+number: 207
+category: conflict-ticket-vs-document
+type: bug
+state: open
+title: Guests cancelling 30 hours before check-in get only half of the money back
+labels: [bug, cancellations]
+created: 2026-10-15T12:30:00Z
+author: support-lead
+body: |
+  A guest cancelled 30 hours before check-in and got only 50% back. According to our rules a
+  cancellation 24 hours or more before check-in gets a full refund.
+
+  Please fix the code so that a cancellation 24h or more before check-in is refunded 100%.
+
+  Rules: see docs/cancellation-rules.md
+comments: []
+links:
+  - title: Cancellation and refund rules
+    page_id: "5502"

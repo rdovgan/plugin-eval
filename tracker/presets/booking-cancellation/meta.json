@@ -1,0 +1,19 @@
+{
+  "domain": "booking-cancellation",
+  "title": "Booking cancellation and refunds",
+  "status": "__STATUS__",
+  "language": "English",
+  "modules": {
+    "booking-core": "__COMMIT__"
+  },
+  "updatedAt": "2026-11-01",
+  "updatedBy": "qa-engineer",
+  "verifiedAt": "__VERIFIED_AT__",
+  "verifiedBy": "__VERIFIED_BY__",
+  "confluence": {
+    "pageId": "",
+    "url": "",
+    "exportedAt": "",
+    "exportedModules": {}
+  }
+}

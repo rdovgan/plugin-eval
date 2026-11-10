@@ -1,0 +1,22 @@
+number: 205
+category: conflict-description-vs-ac
+type: story
+state: open
+title: Round discounted prices for guests
+labels: [feature, rates]
+created: 2026-10-10T11:00:00Z
+author: product-manager
+body: |
+  Guests are confused by prices like 187.35 after a discount. Marketing wants clean prices.
+
+  The final price after a discount must be rounded **down** to whole currency units,
+  for example 10.75 -> 10. The guest should never pay more than the advertised discount implies.
+
+  Acceptance criteria:
+  - Given a discounted price of 10.50, the guest sees 11.
+  - Given a discounted price of 10.49, the guest sees 10.
+  - Partners receive the same amount the guest sees.
+comments:
+  - author: marketing
+    created: 2026-10-11T09:20:00Z
+    body: Please ship before the winter campaign (Nov 25).

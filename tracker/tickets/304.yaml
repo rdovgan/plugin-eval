@@ -1,0 +1,14 @@
+number: 304
+parent: 300
+type: task
+state: open
+title: Pricing of group bookings
+labels: [rates]
+created: 2026-09-16T10:08:00Z
+author: finance
+body: |
+  Group bookings have a negotiated group rate per room and night.
+
+  **Group bookings never get promotional discounts**: `RateService` must not apply any `Discount` to a group
+  booking, even if a promo code is sent. This is a contractual requirement from finance.
+comments: []

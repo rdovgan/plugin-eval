@@ -1,0 +1,22 @@
+number: 300
+category: epic
+type: epic
+state: open
+title: Group bookings
+labels: [epic, bookings]
+created: 2026-09-16T10:00:00Z
+author: product-manager
+body: |
+  Bookings of 4 to 30 rooms for one group (weddings, conferences) go through a separate group booking flow.
+  Regular bookings stay limited by #240.
+
+  Sub-issues:
+  - [ ] #301 Create group bookings
+  - [ ] #302 One confirmation per group
+  - [ ] #303 Cancelling a group booking
+  - [ ] #304 Pricing of group bookings
+  - [ ] #305 Group booking report for partners
+
+  Each sub-issue holds its own rules; read all of them before estimating.
+comments: []
+sub_issues: [301, 302, 303, 304, 305]

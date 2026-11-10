@@ -1,0 +1,28 @@
+number: 101
+category: clear-trivial
+type: bug
+state: open
+title: NPE in RateService.applyDiscount when a booking has no discount
+labels: [bug, rates]
+created: 2026-10-02T09:14:00Z
+author: support-lead
+body: |
+  Creating a booking without a promo code fails with HTTP 500.
+
+  Stack trace (production log, 2026-10-01):
+  ```
+  java.lang.NullPointerException: Cannot invoke "com.demo.booking.rate.Discount.percent()" because "discount" is null
+      at com.demo.booking.rate.RateService.applyDiscount(RateService.java:24)
+      at com.demo.booking.booking.BookingService.create(BookingService.java:49)
+  ```
+
+  Expected: when the booking has no discount, `applyDiscount` returns the base price unchanged
+  (still rounded by `RoundingPolicy`).
+
+  Acceptance criteria:
+  - `applyDiscount(price, null)` returns `price` rounded by `RoundingPolicy`.
+  - A unit test in `RateServiceTest` covers the null discount.
+comments:
+  - author: dev-lead
+    created: 2026-10-02T10:01:00Z
+    body: Confirmed, one-line null check. Nothing else changes.

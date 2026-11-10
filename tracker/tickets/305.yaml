@@ -1,0 +1,11 @@
+number: 305
+parent: 300
+type: task
+state: open
+title: Group booking report for partners
+labels: [reports]
+created: 2026-09-16T10:09:00Z
+author: partner-success
+body: |
+  Monthly CSV report per partner: group id, property, check-in, nights, rooms, total with currency.
+comments: []

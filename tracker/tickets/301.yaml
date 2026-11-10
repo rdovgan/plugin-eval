@@ -1,0 +1,12 @@
+number: 301
+parent: 300
+type: task
+state: open
+title: Create group bookings
+labels: [bookings]
+created: 2026-09-16T10:05:00Z
+author: product-manager
+body: |
+  New endpoint `POST /group-bookings` for 4 to 30 rooms in one property, same check-in and nights for all rooms.
+  A group has a group leader (name and contact email) who receives all communication.
+comments: []

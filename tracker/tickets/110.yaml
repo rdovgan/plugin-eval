@@ -1,0 +1,17 @@
+number: 110
+category: vague
+type: bug
+state: open
+title: Discounts are calculated wrong sometimes
+labels: [bug]
+created: 2026-10-08T15:40:00Z
+author: account-manager
+body: |
+  Some customers complain the discount is wrong. Please fix asap, this is urgent!!
+comments:
+  - author: support-agent
+    created: 2026-10-08T16:02:00Z
+    body: +1, saw it on some booking last week, don't remember which one.
+  - author: account-manager
+    created: 2026-10-09T08:30:00Z
+    body: maybe related to rounding? not sure. партнер каже що "щось не те з цінами".

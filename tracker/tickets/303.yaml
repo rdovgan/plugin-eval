@@ -1,0 +1,12 @@
+number: 303
+parent: 300
+type: task
+state: open
+title: Cancelling a group booking
+labels: [cancellations]
+created: 2026-09-16T10:07:00Z
+author: product-manager
+body: |
+  A group booking is cancelled only as a whole; single rooms cannot be removed from a group.
+  The refund follows the standard cancellation rules (CancellationPolicy) for the group total.
+comments: []

@@ -1,0 +1,25 @@
+number: 206
+category: conflict-comment-overrides
+type: story
+state: open
+title: Notify partners about cancellations reliably
+labels: [feature, notifications]
+created: 2026-09-20T10:00:00Z
+author: product-manager
+body: |
+  Partners complain they do not learn about cancellations.
+
+  Requirements:
+  1. When a booking is cancelled, the partner it came from is notified.
+  2. The notification contains the booking id and the refund amount with currency.
+  3. The notification is sent by email to the partner's contact address.
+  4. Delivery is retried 3 times with a 1 minute delay if it fails.
+comments:
+  - author: partner-success
+    created: 2026-09-22T14:10:00Z
+    body: Booking.com-like partners want this within a minute of the cancellation.
+  - author: product-manager
+    created: 2026-10-14T09:05:00Z
+    body: |
+      Update after the partner call: forget point 3. Partners moved to webhooks, no emails anymore.
+      Use the PartnerWebhookClient from the integrations team. Points 1, 2 and 4 stay.

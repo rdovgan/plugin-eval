@@ -1,0 +1,21 @@
+number: 230
+category: incomplete
+type: bug
+state: open
+title: Refund amount is wrong for partial stays
+labels: [bug, cancellations]
+created: 2026-10-18T09:00:00Z
+author: support-lead
+body: |
+  The refund for guests who leave early is wrong. The correct amounts are in the refund matrix:
+  https://wiki.demo-corp.internal/display/PAY/Refund+matrix
+
+  See the screenshot of the customer's complaint:
+  ![complaint](https://github.com/user-attachments/assets/7d1c2b9e-1f0a-4c55-9e1e-2b6f4f9c0a11)
+comments:
+  - author: support-agent
+    created: 2026-10-18T11:12:00Z
+    body: The matrix is the source of truth, finance owns it.
+links:
+  - title: Refund matrix (Finance)
+    page_id: "5599"

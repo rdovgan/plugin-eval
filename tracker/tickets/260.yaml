@@ -1,0 +1,15 @@
+number: 260
+category: already-done
+type: story
+state: closed
+title: Add the currency code to prices in booking responses
+labels: [feature, api]
+created: 2026-08-10T09:00:00Z
+author: product-manager
+body: |
+  The booking response returns only the amount. Partners in other countries need the ISO currency code
+  next to every amount.
+comments:
+  - author: dev-lead
+    created: 2026-08-28T15:00:00Z
+    body: Done in PR #58, Price now carries the currency and BookingResponse.total returns it. Closing.

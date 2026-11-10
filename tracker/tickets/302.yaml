@@ -1,0 +1,12 @@
+number: 302
+parent: 300
+type: task
+state: open
+title: One confirmation per group
+labels: [notifications]
+created: 2026-09-16T10:06:00Z
+author: product-manager
+body: |
+  The group leader gets one confirmation for the whole group, not one per room.
+  The partner gets one notification per group with the list of rooms.
+comments: []

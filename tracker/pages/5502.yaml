@@ -1,0 +1,24 @@
+id: "5502"
+title: Cancellation and refund rules
+space: PROD
+parent: "5500"
+updated: 2026-06-12T10:00:00Z
+author: product-manager
+body: |
+  # Cancellation and refund rules
+
+  The refund depends on the time between the cancellation and the check-in time of the booking:
+
+  | Time before check-in | Refund |
+  | --- | --- |
+  | 48 hours or more | 100% of the booking total |
+  | 24 to 48 hours | 50% |
+  | less than 24 hours | none |
+
+  The partner the booking came from is notified about every cancellation with the refund amount.
+
+  Partial stays (a guest leaves early) are not covered by these rules; they are handled manually by support.
+comments:
+  - author: support-lead
+    created: 2026-10-15T12:40:00Z
+    body: Shouldn't the full refund start at 24h? Guests expect that. See DEMO-207.

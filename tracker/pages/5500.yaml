@@ -1,0 +1,12 @@
+id: "5500"
+title: Booking platform - product rules
+space: PROD
+updated: 2026-05-02T09:00:00Z
+author: product-manager
+children: ["5502"]
+body: |
+  # Booking platform - product rules
+
+  Overview of the product rules of the booking platform. Child pages hold the rules per area:
+
+  - Cancellation and refund rules
