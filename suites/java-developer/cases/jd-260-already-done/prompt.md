@@ -1,5 +1,5 @@
 ---
-description: Закрита задача, вже реалізована в коді
+description: 'Closed issue, already implemented in code'
 tags:
 - control
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Візьми #260.
+Take #260.

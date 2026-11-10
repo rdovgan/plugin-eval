@@ -1,4 +1,4 @@
-# Плагіни під тестом. Версії (теги, гілки, коміти) беруться з git-репозиторію `repo`.
+# Plugins under test. Versions (tags, branches, commits) come from the git repository `repo`.
 plugins:
   java-developer:
     repo: ~/Desktop/projects/claude-plugins
@@ -7,27 +7,29 @@ plugins:
   java-analyst:
     repo: ~/Desktop/projects/claude-plugins
     subdir: plugins/java-analyst
+    # Writing to .claude/ is forbidden in a `claude plugin eval` run even with --allow-tools (dontAsk mode),
+    # so the analyst's documents (.claude/analysis/) are not created during a run.
     allow_tools: [Write, Edit]
   qa-docs:
     repo: ~/Desktop/projects/claude-plugins
     subdir: plugins/qa-docs
     allow_tools: [Write, Edit]
 
-# Тека всередині робочої копії плагіна, куди копіюються кейси і моки.
+# Directory inside the plugin's working copy where cases and mocks are copied.
 eval_dir_name: pe-evals
 
 runs: 1
-# Паралельні запуски агента (1-8). Усі йдуть з вашого логіну і ділять один rate limit.
+# Parallel agent runs (1-8). All of them use your login and share one rate limit.
 concurrency: 3
 judge_model: haiku
 timeout_per_invocation_sec: 7200
 
 budget:
-  per_invocation_usd: 20   # на один виклик evalkit.run
-  per_day_usd: 50          # сума за календарний день за журналом results/ledger.jsonl
+  per_invocation_usd: 20   # per evalkit.run invocation
+  per_day_usd: 50          # total per calendar day, from results/ledger.jsonl
 
-# Хуки java-developer після правки коду запускають `mvn test`. У прогоні HOME тимчасовий, тому
-# синтетичний проєкт збирається офлайн з цього локального репозиторію Maven.
+# java-developer hooks run `mvn test` after code edits. HOME is temporary during a run, so the
+# synthetic project is built offline from this local Maven repository.
 maven_repo_local: ~/.m2/repository
 
 models:
@@ -37,7 +39,7 @@ models:
     model: claude-haiku-5-5
   glm:
     model: glm-4.6
-    env:                     # значення ${VAR} беруться з оточення або .env
+    env:                     # ${VAR} values come from the environment or .env
       ANTHROPIC_BASE_URL: ${GLM_BASE_URL}
       ANTHROPIC_AUTH_TOKEN: ${GLM_TOKEN}
 

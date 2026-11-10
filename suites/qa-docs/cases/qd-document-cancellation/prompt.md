@@ -1,6 +1,5 @@
 ---
-description: '/qa-docs:document: Jira + Confluence + код; розбіжність 24 vs 48 год
-  у джерелах'
+description: '/qa-docs:document: Jira + Confluence + code; 24 vs 48 h discrepancy in the sources'
 tags:
 - document
 - full
@@ -18,6 +17,6 @@ allowed_tools:
 - Edit
 ---
 
-/qa-docs:document скасування бронювання та повернення коштів (DEMO-207).
+/qa-docs:document booking cancellation and refunds (DEMO-207).
 
-Скоуп підтверджую заздалегідь: лише скасування підтвердженого бронювання, розрахунок повернення і повідомлення партнера; часткове проживання і групові бронювання поза скоупом. Додаткових питань не треба, працюй до кінця дослідження.
+I confirm the scope up front: only cancellation of a confirmed booking, refund calculation and partner notification; partial stays and group bookings are out of scope. No further questions needed, work through to the end of the research.

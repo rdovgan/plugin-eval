@@ -1,5 +1,5 @@
 ---
-description: '/qa-docs:ask без тікета: Jira не чіпається, ліміту ночей у коді немає'
+description: '/qa-docs:ask without a ticket: Jira is not touched, there is no night limit in the code'
 tags:
 - ask
 - control
@@ -17,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-/qa-docs:ask Яку максимальну кількість ночей можна забронювати?
+/qa-docs:ask What is the maximum number of nights that can be booked?

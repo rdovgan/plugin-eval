@@ -1,4 +1,4 @@
-"""Markdown-картка доказів для порівняння двох версій. Викликається з compare.py --report."""
+"""Markdown evidence card for comparing two versions. Called from compare.py --report."""
 from __future__ import annotations
 
 import datetime as dt
@@ -19,48 +19,48 @@ def render(plugin: str, ref_a: str, ref_b: str, model: str, ma: Dict[str, Any], 
            r: Dict[str, Any]) -> str:
     lo, hi = r["ci"]
     lines = [
-        f"# {plugin}: {ref_b} проти {ref_a} · {model}",
+        f"# {plugin}: {ref_b} vs {ref_a} · {model}",
         "",
-        f"**Вердикт: {r['verdict']}.** Середня різниця балу {r['mean_diff']:+.3f}, "
-        f"95% інтервал [{lo:+.3f}, {hi:+.3f}] на {r['n']} кейсах.",
+        f"**Verdict: {r['verdict']}.** Mean score difference {r['mean_diff']:+.3f}, "
+        f"95% interval [{lo:+.3f}, {hi:+.3f}] over {r['n']} cases.",
         "",
         "| | " + ref_a + " | " + ref_b + " |",
         "|---|---|---|",
-        f"| Коміт | `{ma['commit'][:10]}` | `{mb['commit'][:10]}` |",
-        f"| Загальний бал | {ma.get('overall_score')} | {mb.get('overall_score')} |",
-        f"| Вартість | {_money(ma.get('cost_usd'))} | {_money(mb.get('cost_usd'))} |",
-        f"| Час, с | {ma.get('duration_sec')} | {mb.get('duration_sec')} |",
-        f"| Дата прогону | {ma['created_at']} | {mb['created_at']} |",
+        f"| Commit | `{ma['commit'][:10]}` | `{mb['commit'][:10]}` |",
+        f"| Overall score | {ma.get('overall_score')} | {mb.get('overall_score')} |",
+        f"| Cost | {_money(ma.get('cost_usd'))} | {_money(mb.get('cost_usd'))} |",
+        f"| Time, s | {ma.get('duration_sec')} | {mb.get('duration_sec')} |",
+        f"| Run date | {ma['created_at']} | {mb['created_at']} |",
         "",
-        "## Кейси",
+        "## Cases",
         "",
-        "| Кейс | " + ref_a + " | " + ref_b + " | Δ | Розкид A / B | Помилки |",
+        "| Case | " + ref_a + " | " + ref_b + " | Δ | Spread A / B | Errors |",
         "|---|---|---|---|---|---|",
     ]
     for row in sorted(r["rows"], key=lambda x: x["diff"]):
-        mark = " (контрольний)" if row["control"] else ""
+        mark = " (control)" if row["control"] else ""
         flag = " ⚠️" if row["diff"] < 0 else ""
         lines.append(f"| {row['case']}{mark} | {row['a']:.2f} | {row['b']:.2f} | {row['diff']:+.2f}{flag} | "
                      f"{row['stdev_a']:.2f} / {row['stdev_b']:.2f} | {row['errors']} |")
     if r["control_regressions"]:
-        lines += ["", "**Погіршились контрольні кейси:** " + ", ".join(r["control_regressions"])]
+        lines += ["", "**Regressed control cases:** " + ", ".join(r["control_regressions"])]
     if r["only_in_a"] or r["only_in_b"]:
-        lines += ["", f"Кейси лише в {ref_a}: {', '.join(r['only_in_a']) or '—'}; "
-                      f"лише в {ref_b}: {', '.join(r['only_in_b']) or '—'}."]
+        lines += ["", f"Cases only in {ref_a}: {', '.join(r['only_in_a']) or '—'}; "
+                      f"only in {ref_b}: {', '.join(r['only_in_b']) or '—'}."]
     lines += [
         "",
-        "## Як отримано",
+        "## How it was obtained",
         "",
-        f"- Набір кейсів: `{mb['suite_hash']}`, повторів на кейс: {mb['runs']}"
-        f"{', smoke' if mb.get('smoke') else ''}{', з прихованим набором' if mb.get('hidden') else ''}",
-        f"- Моки MCP: {', '.join(mb.get('mocked_servers') or []) or '—'}",
-        f"- Модель: `{mb['model']}`{' через ' + mb['base_url'] if mb.get('base_url') else ''}; "
+        f"- Case suite: `{mb['suite_hash']}`, attempts per case: {mb['runs']}"
+        f"{', smoke' if mb.get('smoke') else ''}{', with the hidden set' if mb.get('hidden') else ''}",
+        f"- MCP mocks: {', '.join(mb.get('mocked_servers') or []) or '—'}",
+        f"- Model: `{mb['model']}`{' via ' + mb['base_url'] if mb.get('base_url') else ''}; "
         f"judge: `{mb['judge_model']}`",
         f"- Claude Code: {ma['claude_version']} / {mb['claude_version']}",
-        f"- Інтервал: перцентильний бутстреп по кейсах, {ITERATIONS} ітерацій, seed {SEED}",
-        f"- Сирі результати: `{Path(ma['_dir']).name}`, `{Path(mb['_dir']).name}` у results/",
+        f"- Interval: percentile bootstrap over cases, {ITERATIONS} iterations, seed {SEED}",
+        f"- Raw results: `{Path(ma['_dir']).name}`, `{Path(mb['_dir']).name}` in results/",
         "",
-        f"_Згенеровано {dt.datetime.now().isoformat(timespec='minutes')}._",
+        f"_Generated {dt.datetime.now().isoformat(timespec='minutes')}._",
     ]
     return "\n".join(lines) + "\n"
 

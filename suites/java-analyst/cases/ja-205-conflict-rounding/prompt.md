@@ -1,5 +1,5 @@
 ---
-description: 'Суперечності в 01-research.md: опис vs AC vs ADR 0003'
+description: 'Conflicts in 01-research.md: description vs AC vs ADR 0003'
 tags:
 - conflict
 - smoke

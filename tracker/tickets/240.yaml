@@ -12,7 +12,7 @@ comments:
   - {author: product-manager, created: 2026-09-01T08:10:00Z, body: "Proposal: max 5 rooms per booking."}
   - {author: dev-lead, created: 2026-09-01T09:00:00Z, body: "Today the code allows 10 (BookingService.MAX_ROOMS)."}
   - {author: sales, created: 2026-09-01T10:30:00Z, body: "5 is too low for our corporate clients."}
-  - {author: qa-engineer, created: 2026-09-01T11:00:00Z, body: "Хто прибрав мій тестовий стенд? :("}
+  - {author: qa-engineer, created: 2026-09-01T11:00:00Z, body: "Who took down my test environment? :("}
   - {author: dev-lead, created: 2026-09-01T11:05:00Z, body: "Not me. Back to the topic please."}
   - {author: partner-success, created: 2026-09-02T08:00:00Z, body: "Partners sync inventory per room; above 6 rooms they time out."}
   - {author: sales, created: 2026-09-02T09:15:00Z, body: "Then 8? We can split bigger ones manually."}
@@ -24,13 +24,13 @@ comments:
   - {author: product-manager, created: 2026-09-05T15:00:00Z, body: "Noted. Still 5 unless partners agree."}
   - {author: partner-success, created: 2026-09-08T09:00:00Z, body: "Two partners can do 8, others cannot."}
   - {author: sales, created: 2026-09-08T09:30:00Z, body: "So 8 it is?"}
-  - {author: qa-engineer, created: 2026-09-09T10:00:00Z, body: "Чи треба тестувати 0 кімнат? Зараз 0 падає з 400, це ок."}
+  - {author: qa-engineer, created: 2026-09-09T10:00:00Z, body: "Do we need to test 0 rooms? Today 0 fails with a 400, which is fine."}
   - {author: dev-lead, created: 2026-09-09T10:20:00Z, body: "Yes, 0 is already rejected."}
   - {author: support-agent, created: 2026-09-10T08:00:00Z, body: "Off-topic: who owns the partner FAQ?"}
   - {author: product-manager, created: 2026-09-12T11:00:00Z, body: "Meeting with partners on Monday, will decide there."}
   - {author: partner-success, created: 2026-09-15T16:00:00Z, body: "Notes from the partner meeting are in the shared drive."}
-  - {author: product-manager, created: 2026-09-15T17:30:00Z, body: "Фінальне рішення після зустрічі з партнерами: максимум 3 кімнати в одному бронюванні. Більше 3 кімнат - тільки через групове бронювання (#300). Попередні цифри (5, 8) більше не актуальні."}
+  - {author: product-manager, created: 2026-09-15T17:30:00Z, body: "Final decision after the meeting with partners: at most 3 rooms per booking. More than 3 rooms - only through a group booking (#300). The earlier numbers (5, 8) are no longer valid."}
   - {author: sales, created: 2026-09-15T17:45:00Z, body: "😢 ok"}
   - {author: dev-lead, created: 2026-09-16T09:00:00Z, body: "Error message should say how to make a group booking."}
-  - {author: qa-engineer, created: 2026-09-16T09:10:00Z, body: "Добре, тест-кейси оновлю."}
+  - {author: qa-engineer, created: 2026-09-16T09:10:00Z, body: "OK, I will update the test cases."}
   - {author: support-agent, created: 2026-09-18T12:00:00Z, body: "Is this live yet? A partner is asking."}

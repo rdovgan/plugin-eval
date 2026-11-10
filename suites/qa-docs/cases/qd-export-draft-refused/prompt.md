@@ -1,5 +1,5 @@
 ---
-description: '/qa-docs:export draft-домену: відмова, нічого не публікується'
+description: '/qa-docs:export of a draft domain: refused, nothing is published'
 tags:
 - export
 - control

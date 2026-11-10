@@ -1,4 +1,4 @@
-"""Зберігання прогонів у results/<key>/ і журнал витрат results/ledger.jsonl."""
+"""Storage of runs in results/<key>/ and the spend ledger results/ledger.jsonl."""
 from __future__ import annotations
 
 import datetime as dt
@@ -15,7 +15,7 @@ RESULTS = ROOT / "results"
 LEDGER = RESULTS / "ledger.jsonl"
 
 
-# ---------- кейси ----------
+# ---------- cases ----------
 
 def case_dirs(*roots: Path) -> List[Path]:
     out = []
@@ -27,7 +27,7 @@ def case_dirs(*roots: Path) -> List[Path]:
 
 
 def suite_hash(dirs: Iterable[Path]) -> str:
-    """Хеш вмісту всіх файлів кейсів: змінився один символ — інший хеш, інший ключ кешу."""
+    """Hash of the contents of all case files: one changed character gives a different hash and cache key."""
     h = hashlib.sha256()
     for d in sorted(dirs, key=lambda p: p.name):
         for f in sorted(p for p in d.rglob("*") if p.is_file()):
@@ -46,7 +46,7 @@ def read_frontmatter(path: Path) -> Dict[str, Any]:
 
 
 def case_meta(d: Path) -> Dict[str, Any]:
-    """Ім'я і теги кейсу. Тег `control` позначає контрольну задачу."""
+    """Case name and tags. The `control` tag marks a control task."""
     meta: Dict[str, Any] = {}
     if (d / "case.yaml").is_file():
         meta.update(yaml.safe_load((d / "case.yaml").read_text(encoding="utf-8")) or {})
@@ -55,7 +55,7 @@ def case_meta(d: Path) -> Dict[str, Any]:
     return {"name": meta.get("name", d.name), "tags": list(meta.get("tags") or [])}
 
 
-# ---------- ключ кешу і прогони ----------
+# ---------- cache key and runs ----------
 
 def cache_key(**parts: Any) -> str:
     blob = json.dumps(parts, sort_keys=True, ensure_ascii=False)
@@ -67,7 +67,7 @@ def run_dir(key: str) -> Path:
 
 
 def cached(key: str) -> Optional[Dict[str, Any]]:
-    """Кеш влучає лише для завершеного (не partial) прогону."""
+    """The cache hits only for a completed (not partial) run."""
     m = run_dir(key) / "manifest.json"
     if not m.is_file():
         return None
@@ -91,7 +91,7 @@ def manifests() -> List[Dict[str, Any]]:
 
 
 def find_latest(plugin: str, ref: str, model: str, smoke: bool) -> Optional[Dict[str, Any]]:
-    """Останній завершений повний (без --case) прогін плагіна для тегу/коміту та моделі."""
+    """The latest completed full (no --case) run of the plugin for a tag/commit and model."""
     hits = [m for m in manifests()
             if not m.get("partial") and not m.get("case_filter") and m.get("plugin") == plugin
             and m.get("model_name") == model and bool(m.get("smoke")) == smoke
@@ -99,7 +99,7 @@ def find_latest(plugin: str, ref: str, model: str, smoke: bool) -> Optional[Dict
     return max(hits, key=lambda m: m["created_at"]) if hits else None
 
 
-# ---------- бюджет ----------
+# ---------- budget ----------
 
 def log_cost(key: str, cost: float) -> None:
     RESULTS.mkdir(parents=True, exist_ok=True)

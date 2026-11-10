@@ -1,9 +1,9 @@
-"""Читання aggregate-result.json від `claude plugin eval` (schemaVersion 1).
+"""Reads aggregate-result.json from `claude plugin eval` (schemaVersion 1).
 
-Звірено з реальним прогоном (Claude Code 2.1.322): costUsd, durationSeconds, claudeVersion, partial,
-aggregates.overallScore, cases[].name, cases[].aggregates.score, cases[].arms.with[] з полями
+Checked against a real run (Claude Code 2.1.322): costUsd, durationSeconds, claudeVersion, partial,
+aggregates.overallScore, cases[].name, cases[].aggregates.score, cases[].arms.with[] with the fields
 score, error, turns, costUsd, graders[] (name, passed, scored, explanation), mocks, tracePath.
-Запасні імена ключів лишені на випадок змін схеми.
+Fallback key names are kept in case the schema changes.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def load(path: Path) -> Dict[str, Any]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     version = data.get("schemaVersion")
     if version not in (None, 1):
-        print(f"увага: schemaVersion={version}, скрипт писали під 1")
+        print(f"warning: schemaVersion={version}, this script was written for 1")
     return data
 
 
@@ -25,7 +25,7 @@ def _case_name(case: Dict[str, Any]) -> str:
     for key in ("name", "caseName", "case", "id"):
         if isinstance(case.get(key), str):
             return case[key]
-    raise KeyError(f"не знайшов імені кейсу серед ключів {sorted(case)}")
+    raise KeyError(f"no case name found among keys {sorted(case)}")
 
 
 def _run_score(run: Dict[str, Any]) -> Optional[float]:
@@ -36,7 +36,7 @@ def _run_score(run: Dict[str, Any]) -> Optional[float]:
 
 
 def ungraded(run: Dict[str, Any]) -> bool:
-    """Запуск обірвався до оцінювання (ліміт плану, rate limit, помилка API): бал 0 нічого не означає."""
+    """The attempt aborted before grading (plan limit, rate limit, API error): a score of 0 means nothing."""
     return bool(run.get("error")) and not run.get("graders")
 
 
@@ -46,7 +46,7 @@ def ungraded_count(data: Dict[str, Any]) -> int:
 
 
 def case_scores(data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    """{ім'я кейсу: {score, runs: [бали прогонів], errors: n}} для with-arm."""
+    """{case name: {score, runs: [attempt scores], errors: n}} for the with-arm."""
     out: Dict[str, Dict[str, Any]] = {}
     for case in data.get("cases") or []:
         name = _case_name(case)
@@ -64,7 +64,7 @@ def case_scores(data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
 
 
 def summary(data: Dict[str, Any]) -> Dict[str, Any]:
-    """partial=True і для прогонів з неоціненими запусками: такий бал не порівнюють і не кешують."""
+    """partial=True also for runs with ungraded attempts: such a score is neither compared nor cached."""
     bad = ungraded_count(data)
     partial = bool(data.get("partial")) or bad > 0
     reason = data.get("partialReason") or (f"ungraded:{bad}" if bad else None)

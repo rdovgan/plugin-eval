@@ -19,20 +19,20 @@ class BootstrapTest(unittest.TestCase):
         r = compare(scores(a=0.2, b=0.3, c=0.1, d=0.4, e=0.2, f=0.3),
                     scores(a=0.8, b=0.9, c=0.7, d=1.0, e=0.8, f=0.9), {})
         self.assertGreater(r["ci"][0], 0)
-        self.assertEqual(r["verdict"], "краще")
+        self.assertEqual(r["verdict"], "better")
 
     def test_control_regression_blocks_better(self):
         r = compare(scores(a=0.2, b=0.2, c=0.2, ctl=1.0),
                     scores(a=0.9, b=0.9, c=0.9, ctl=0.67), {"ctl": ["control"]})
         self.assertEqual(r["control_regressions"], ["ctl"])
-        self.assertNotEqual(r["verdict"], "краще")
+        self.assertNotEqual(r["verdict"], "better")
 
     def test_noise_is_not_proven(self):
         r = compare(scores(a=0.5, b=0.6, c=0.4), scores(a=0.6, b=0.5, c=0.4), {})
-        self.assertEqual(r["verdict"], "не доведено")
+        self.assertEqual(r["verdict"], "inconclusive")
 
     def test_clear_regression_is_worse(self):
-        self.assertEqual(verdict((-0.4, -0.1), []), "гірше")
+        self.assertEqual(verdict((-0.4, -0.1), []), "worse")
 
     def test_missing_cases_reported(self):
         r = compare(scores(a=1.0, old=1.0), scores(a=1.0, new=1.0), {})

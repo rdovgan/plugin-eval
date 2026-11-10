@@ -1,5 +1,5 @@
 ---
-description: 'Епік з 5 під-задачами; критичне обмеження лише в #304'
+description: 'Epic with 5 sub-issues; the critical constraint is only in #304'
 tags:
 - epic
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Нам дали епік #300, проаналізуй що треба зробити.
+We were given epic #300, analyze what needs to be done.

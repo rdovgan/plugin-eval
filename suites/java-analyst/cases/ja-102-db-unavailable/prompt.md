@@ -1,5 +1,5 @@
 ---
-description: 'DB MCP не стартував: це сказано в Sources, схема не вигадана'
+description: 'DB MCP did not start: Sources says so, the schema is not invented'
 tags:
 - incomplete
 max_turns: 60

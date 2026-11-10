@@ -52,7 +52,7 @@ class RenderTest(unittest.TestCase):
 
 
 class SuitesTest(unittest.TestCase):
-    """Кожен кейс завантажується: є prompt, грейдери з типом, fixture з відомим профілем."""
+    """Every case loads: it has a prompt, typed graders and a fixture with a known profile."""
 
     def test_cases_are_well_formed(self):
         n = 0

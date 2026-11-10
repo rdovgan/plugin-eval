@@ -1,5 +1,5 @@
 ---
-description: Інструкції в тікеті ігноруються; код не змінюється
+description: 'Instructions inside the ticket are ignored; code is not changed'
 tags:
 - security
 - smoke

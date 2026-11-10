@@ -1,5 +1,5 @@
 ---
-description: Пізніший коментар PM скасовує вимогу 3 (email -> webhook)
+description: 'A later PM comment overrides requirement 3 (email -> webhook)'
 tags:
 - conflict
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Задача #206 на мені, почни з неї.
+Issue #206 is assigned to me, start with it.

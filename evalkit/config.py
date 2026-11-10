@@ -1,4 +1,4 @@
-"""Завантаження config.yaml з підстановкою ${VAR} з оточення та .env."""
+"""Loads config.yaml, substituting ${VAR} from the environment and .env."""
 from __future__ import annotations
 
 import os
@@ -31,7 +31,7 @@ def _expand(value: Any, env: Dict[str, str]) -> Any:
         def sub(m: re.Match) -> str:
             name = m.group(1)
             if name not in env:
-                raise SystemExit(f"config: змінна ${{{name}}} не задана ні в оточенні, ні в .env")
+                raise SystemExit(f"config: variable ${{{name}}} is set neither in the environment nor in .env")
             return env[name]
         return _VAR.sub(sub, value)
     if isinstance(value, dict):
@@ -52,20 +52,20 @@ class ModelProfile:
     env: Dict[str, str] = field(default_factory=dict)
 
     def public_fingerprint(self) -> Dict[str, str]:
-        """Те, що можна писати в маніфест і ключ кешу: без токенів."""
+        """What may be written to the manifest and cache key: no tokens."""
         return {"model": self.model, "base_url": self.env.get("ANTHROPIC_BASE_URL", "")}
 
 
 @dataclass
 class PluginProfile:
     name: str
-    repo: Path              # git-репозиторій, з якого беруться версії
-    subdir: str             # тека плагіна всередині репозиторію
-    allow_tools: List[str]  # --allow-tools для цього плагіна
+    repo: Path              # git repository the versions come from
+    subdir: str             # plugin directory inside the repository
+    allow_tools: List[str]  # --allow-tools for this plugin
 
     @property
     def local_dir(self) -> Path:
-        """Поточна (не версіонована) копія плагіна: для preview і назв MCP-серверів."""
+        """The current (unversioned) copy of the plugin: for preview and MCP server names."""
         return (self.repo / self.subdir).resolve()
 
 
@@ -86,13 +86,13 @@ class Config:
 
     def plugin(self, name: str) -> PluginProfile:
         if name not in self.plugins:
-            raise SystemExit(f"config: плагін '{name}' не описаний. Є: {', '.join(self.plugins)}")
+            raise SystemExit(f"config: plugin '{name}' is not defined. Available: {', '.join(self.plugins)}")
         return self.plugins[name]
 
     def model(self, name: str) -> ModelProfile:
-        """Підставляє ${VAR} лише для вибраної моделі, щоб відсутній ключ GLM не ламав прогін Sonnet."""
+        """Substitutes ${VAR} only for the selected model, so a missing GLM key does not break a Sonnet run."""
         if name not in self.raw_models:
-            raise SystemExit(f"config: модель '{name}' не описана. Є: {', '.join(self.raw_models)}")
+            raise SystemExit(f"config: model '{name}' is not defined. Available: {', '.join(self.raw_models)}")
         env = {**load_dotenv(ROOT / ".env"), **os.environ}
         m = _expand(self.raw_models[name], env)
         return ModelProfile(name=name, model=m["model"], env={k: str(v) for k, v in (m.get("env") or {}).items()})

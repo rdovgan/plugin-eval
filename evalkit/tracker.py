@@ -1,19 +1,19 @@
-"""Тестовий трекер: спільні тікети -> моки MCP-серверів плагіна + scaffold робочого простору.
+"""Test tracker: shared tickets -> mocks of the plugin's MCP servers + workspace scaffold.
 
-Джерело правди:
-  tracker/tickets/<n>.yaml      тікет (номер n; у Jira це DEMO-<n>)
-  tracker/pages/<id>.yaml       сторінка Confluence
-  tracker/workspace/booking-core/  синтетичний Maven-проєкт, на який посилаються тікети
-  tracker/presets/<domain>/     готовий домен qa-docs для кейсів експорту
+Source of truth:
+  tracker/tickets/<n>.yaml      ticket (number n; in Jira it is DEMO-<n>)
+  tracker/pages/<id>.yaml       Confluence page
+  tracker/workspace/booking-core/  synthetic Maven project the tickets refer to
+  tracker/presets/<domain>/     ready-made qa-docs domain for export cases
 
-build() кладе в теку кейсів робочої копії плагіна:
-  mocks/github/...   якщо плагін оголошує MCP-сервер `github` (java-developer, java-analyst)
-  mocks/jira/...     якщо оголошує `jira` (qa-docs: Jira + Confluence)
-  <case>/case.yaml + <case>/scaffold.sh   для кожного кейсу з fixture.yaml
+build() puts into the cases directory of the plugin's working copy:
+  mocks/github/...   if the plugin declares the `github` MCP server (java-developer, java-analyst)
+  mocks/jira/...     if it declares `jira` (qa-docs: Jira + Confluence)
+  <case>/case.yaml + <case>/scaffold.sh   for every case with a fixture.yaml
 
-Інструменти без мок-файлу плагіну недоступні, тож справжній трекер не зачіпається.
+Tools without a mock file are unavailable to the plugin, so the real tracker is never touched.
 
-    python -m evalkit.tracker preview --plugin qa-docs   # зібрати в тимчасову теку і показати дерево
+    python -m evalkit.tracker preview --plugin qa-docs   # build into a temporary directory and show the tree
 """
 from __future__ import annotations
 
@@ -37,11 +37,11 @@ TRACKER = ROOT / "tracker"
 GH_OWNER, GH_REPO = "demo-org", "booking-core"
 JIRA_PROJECT, JIRA_SITE, CLOUD_ID = "DEMO", "demo.atlassian.net", "4f1c9a2e-0d3b-4e7a-9b61-5a2c8d7e1f00"
 QA_SPACE, QA_PARENT = "QA", "777001"
-# Фіксовані дати комітів дають однаковий SHA при кожному scaffold.
+# Fixed commit dates give the same SHA on every scaffold.
 GIT_DATE = "2026-10-30T12:00:00+00:00"
 
 
-# ---------- завантаження ----------
+# ---------- loading ----------
 
 def _load_dir(d: Path) -> List[Dict[str, Any]]:
     return [yaml.safe_load(p.read_text(encoding="utf-8")) for p in sorted(d.glob("*.yaml"))]
@@ -114,7 +114,7 @@ def render_github(dst: Path) -> None:
         {"number": n, "title": t["title"], "state": t["state"], "labels": [{"name": l} for l in t.get("labels", [])],
          "html_url": f"https://github.com/{GH_OWNER}/{GH_REPO}/issues/{n}"} for n, t in all_t.items()]}
 
-    # Один файл на issue незалежно від method: опис, коментарі, під-задачі й батьківська задача разом.
+    # One file per issue regardless of method: description, comments, sub-issues and the parent issue together.
     _mock(dst / "issue_read.md", "{{file:fixtures/issues/{input.issue_number}.json}}",
           {"expect": {"owner": GH_OWNER, "repo": GH_REPO, "issue_number": "number",
                       "method": ["get", "get_comments", "get_sub_issues", "get_parent", "get_labels"]}})
@@ -143,7 +143,7 @@ def render_github(dst: Path) -> None:
 # ---------- Jira + Confluence (qa-docs) ----------
 
 def _jira_text(text: str, numbers: Iterable[int]) -> str:
-    """#205 -> DEMO-205 лише для номерів, які є в трекері (PR #58 лишається як є)."""
+    """#205 -> DEMO-205 only for numbers present in the tracker (PR #58 stays as is)."""
     known = set(numbers)
     return re.sub(r"(?<![\w/])#(\d+)\b",
                   lambda m: f"{JIRA_PROJECT}-{m.group(1)}" if int(m.group(1)) in known else m.group(0), text)
@@ -228,7 +228,7 @@ def render_jira(dst: Path) -> None:
           {"expect": {**cloud, "issueIdOrKey": "/^DEMO-\\d+$/"}})
     _mock(dst / "getJiraIssueRemoteIssueLinks.md", "{{file:fixtures/links/{input.issueIdOrKey}.json}}",
           {"expect": {**cloud, "issueIdOrKey": "/^DEMO-\\d+$/"}})
-    # JQL не інтерпретується: пошук завжди повертає весь проєкт DEMO, від новіших до старших.
+    # JQL is not interpreted: search always returns the whole DEMO project, newest first.
     search = {"isLast": True, "issues": [
         {"key": f"{JIRA_PROJECT}-{n}", "fields": {"summary": t["title"],
                                                   "status": {"name": "Done" if t["state"] == "closed" else "To Do"},
@@ -337,11 +337,11 @@ def scaffold_script(fixture: Dict[str, Any], maven_repo: str) -> str:
     out = [_HEADER.format(date=GIT_DATE)]
     out.append(f"mvn_offline() {{ mkdir -p \"$1/.mvn\"; {mvn_cfg}; }}\n")
     if profile == "dev":
-        # java-developer / java-analyst: Claude стартує в корені репозиторію booking-core.
+        # java-developer / java-analyst: Claude starts in the root of the booking-core repository.
         out.append(f"unpack . <<'B64'\n{repo_b64}\nB64\n")
         out.append(f"mvn_offline .\nnew_repo . {remote}\n")
     elif profile == "qa":
-        # qa-docs: Claude стартує в корені робочого простору сервера; репозиторії - його підтеки.
+        # qa-docs: Claude starts in the root of the server workspace; repositories are its subdirectories.
         out.append(f"unpack booking-core <<'B64'\n{repo_b64}\nB64\n")
         out.append(f"mvn_offline booking-core\nnew_repo booking-core {remote}\n")
         out.append(_QA_WORKSPACE.format(space=QA_SPACE, parent=QA_PARENT, site=JIRA_SITE))
@@ -354,7 +354,7 @@ def scaffold_script(fixture: Dict[str, Any], maven_repo: str) -> str:
                                            vat="2026-11-02" if line != "draft" else "",
                                            vby="qa-lead" if line != "draft" else ""))
     else:
-        raise SystemExit(f"fixture.yaml: невідомий profile '{profile}' (dev | qa)")
+        raise SystemExit(f"fixture.yaml: unknown profile '{profile}' (dev | qa)")
     return "".join(out)
 
 
@@ -406,7 +406,7 @@ echo '| Booking cancellation and refunds | `{slug}` | Cancelling a booking, refu
 """
 
 
-# ---------- збірка в теку кейсів ----------
+# ---------- building into the cases directory ----------
 
 def plugin_servers(plugin_dir: Path) -> List[str]:
     f = plugin_dir / ".mcp.json"
@@ -414,7 +414,7 @@ def plugin_servers(plugin_dir: Path) -> List[str]:
 
 
 def build(plugin_dir: Path, case_dirs: List[Path], target: Path, maven_repo: str) -> List[str]:
-    """Копіює кейси в target, додає scaffold і моки. Повертає список змоканих серверів."""
+    """Copies cases into target, adds scaffold and mocks. Returns the list of mocked servers."""
     if target.exists():
         shutil.rmtree(target)
     target.mkdir(parents=True)
@@ -443,9 +443,9 @@ def build(plugin_dir: Path, case_dirs: List[Path], target: Path, maven_repo: str
 def main(argv: List[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
-    pv = sub.add_parser("preview", help="зібрати кейси плагіна в тимчасову теку")
+    pv = sub.add_parser("preview", help="build the plugin's cases into a temporary directory")
     pv.add_argument("--plugin", required=True)
-    pv.add_argument("--out", help="куди зібрати (за замовчуванням тимчасова тека)")
+    pv.add_argument("--out", help="where to build (default: a temporary directory)")
     args = p.parse_args(argv)
 
     from . import config, store
@@ -454,7 +454,7 @@ def main(argv: List[str]) -> int:
     out = Path(args.out) if args.out else Path(tempfile.mkdtemp(prefix=f"pe-preview-{args.plugin}-"))
     dirs = store.case_dirs(ROOT / "suites" / args.plugin / "cases")
     mocked = build(plug.local_dir, dirs, out, cfg.maven_repo)
-    print(f"{len(dirs)} кейсів, моки: {', '.join(mocked) or 'немає'} -> {out}")
+    print(f"{len(dirs)} cases, mocks: {', '.join(mocked) or 'none'} -> {out}")
     return 0
 
 

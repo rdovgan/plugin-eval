@@ -1,5 +1,5 @@
 ---
-description: Недоступні вікі і скріншот потрапляють у 'Not read' і відкриті питання
+description: 'Unavailable wiki and screenshot end up in ''Not read'' and open questions'
 tags:
 - incomplete
 max_turns: 60

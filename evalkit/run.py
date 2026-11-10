@@ -1,9 +1,9 @@
-"""Прогін кейсів проти версій плагінів та моделей.
+"""Runs cases against plugin versions and models.
 
-    python -m evalkit.run --refs HEAD --models haiku --smoke                 # усі плагіни, smoke
+    python -m evalkit.run --refs HEAD --models haiku --smoke                 # all plugins, smoke
     python -m evalkit.run --plugins java-developer --refs v0.10.0 HEAD --models sonnet
     python -m evalkit.run --plugins qa-docs --refs HEAD --models haiku --case 'qd-ask-*' --runs 1
-    python -m evalkit.run --refs HEAD --models sonnet --hidden               # + прихований набір
+    python -m evalkit.run --refs HEAD --models sonnet --hidden               # + the hidden set
 """
 from __future__ import annotations
 
@@ -35,12 +35,12 @@ def resolve_commit(repo: Path, ref: str) -> str:
     try:
         return sh("git", "-C", str(repo), "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}")
     except subprocess.CalledProcessError:
-        raise SystemExit(f"у {repo} немає тегу, гілки чи коміту '{ref}'")
+        raise SystemExit(f"{repo} has no tag, branch or commit '{ref}'")
 
 
 def add_worktree(repo: Path, commit: str) -> Path:
     wt = Path(tempfile.mkdtemp(prefix=f"pe-{commit[:8]}-"))
-    wt.rmdir()  # git worktree add хоче, щоб теки не було
+    wt.rmdir()  # git worktree add wants the directory to not exist
     sh("git", "-C", str(repo), "worktree", "add", "--detach", str(wt), commit)
     return wt
 
@@ -64,14 +64,14 @@ def run_one(cfg: Config, plug: PluginProfile, plugin_dir: Path, profile: ModelPr
            "--model", profile.model,
            "--judge-model", cfg.judge_model,
            "--concurrency", str(cfg.concurrency),
-           "--scaffold",                    # кейси самі будують робочий простір (tracker.scaffold_script)
+           "--scaffold",                    # cases build their own workspace (tracker.scaffold_script)
            "--trust-plugin", "--no-publish",
            "--max-cost-usd", f"{max_cost:.2f}",
            "--json", str(out)]
     if case_glob:
         cmd += ["--case", case_glob]
     if keep_temp:
-        cmd.append("--keep-temp")              # зберегти робочий простір і trace.jsonl кожного прогону
+        cmd.append("--keep-temp")              # keep the workspace and trace.jsonl of every attempt
     if tags:
         cmd += ["--tag", *tags]
     if plug.allow_tools:
@@ -83,20 +83,20 @@ def run_one(cfg: Config, plug: PluginProfile, plugin_dir: Path, profile: ModelPr
 
 def main(argv: List[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("--plugins", nargs="+", help="імена з config.yaml (за замовчуванням усі)")
-    p.add_argument("--refs", nargs="+", required=True, help="git-теги, гілки або коміти репозиторію плагіна")
-    p.add_argument("--models", nargs="+", required=True, help="імена профілів з config.yaml")
-    p.add_argument("--smoke", action="store_true", help="лише кейси з smoke-тегами, менше повторів")
-    p.add_argument("--hidden", action="store_true", help="додати кейси з suites/<plugin>/hidden/")
-    p.add_argument("--case", help="glob імені кейсу (для налагодження одного кейсу)")
-    p.add_argument("--runs", type=int, help="перевизначити кількість повторів")
-    p.add_argument("--force", action="store_true", help="ігнорувати кеш")
-    p.add_argument("--keep-temp", action="store_true", help="зберегти робочі теки й трейси прогонів")
+    p.add_argument("--plugins", nargs="+", help="names from config.yaml (default: all)")
+    p.add_argument("--refs", nargs="+", required=True, help="git tags, branches or commits of the plugin repository")
+    p.add_argument("--models", nargs="+", required=True, help="profile names from config.yaml")
+    p.add_argument("--smoke", action="store_true", help="only cases with smoke tags, fewer attempts")
+    p.add_argument("--hidden", action="store_true", help="add cases from suites/<plugin>/hidden/")
+    p.add_argument("--case", help="case name glob (for debugging a single case)")
+    p.add_argument("--runs", type=int, help="override the number of attempts")
+    p.add_argument("--force", action="store_true", help="ignore the cache")
+    p.add_argument("--keep-temp", action="store_true", help="keep working directories and run traces")
     args = p.parse_args(argv)
 
     cfg = load()
     plugins = [cfg.plugin(n) for n in (args.plugins or list(cfg.plugins))]
-    profiles = [cfg.model(m) for m in args.models]   # падає одразу, якщо бракує змінних
+    profiles = [cfg.model(m) for m in args.models]   # fails right away if variables are missing
     runs = args.runs or (cfg.smoke_runs if args.smoke else cfg.runs)
     tags = cfg.smoke_tags if args.smoke else []
     version = cli_version()
@@ -105,11 +105,11 @@ def main(argv: List[str]) -> int:
     for plug in plugins:
         dirs = suite_dirs(plug.name, args.hidden)
         if not dirs:
-            print(f"[{plug.name}] немає кейсів у suites/{plug.name}/cases", file=sys.stderr)
+            print(f"[{plug.name}] no cases in suites/{plug.name}/cases", file=sys.stderr)
             continue
-        # Хеш набору включає трекер: змінився тікет або синтетичний проєкт - кеш недійсний.
+        # The suite hash includes the tracker: a changed ticket or synthetic project invalidates the cache.
         suite = store.suite_hash([*dirs, tracker.TRACKER])
-        print(f"[{plug.name}] кейсів: {len(dirs)}  suite={suite}  runs={runs}  claude={version}")
+        print(f"[{plug.name}] cases: {len(dirs)}  suite={suite}  runs={runs}  claude={version}")
 
         for ref in args.refs:
             commit = resolve_commit(plug.repo, ref)
@@ -119,7 +119,7 @@ def main(argv: List[str]) -> int:
                                       suite=suite, runs=runs, tags=tags, case=args.case,
                                       judge=cfg.judge_model, claude=version)
                 if not args.force and store.cached(key):
-                    print(f"  [кеш] {ref} ({commit[:8]}) × {prof.name} -> results/{key}")
+                    print(f"  [cache] {ref} ({commit[:8]}) × {prof.name} -> results/{key}")
                 else:
                     pending.append((prof, key))
             if not pending:
@@ -129,24 +129,24 @@ def main(argv: List[str]) -> int:
             try:
                 plugin_dir = (wt / plug.subdir).resolve()
                 if not (plugin_dir / ".claude-plugin" / "plugin.json").is_file():
-                    print(f"  {ref}: у {plug.subdir} немає плагіна, пропускаю", file=sys.stderr)
+                    print(f"  {ref}: no plugin in {plug.subdir}, skipping", file=sys.stderr)
                     continue
                 mocked = tracker.build(plugin_dir, dirs, plugin_dir / cfg.eval_dir_name, cfg.maven_repo)
                 for prof, key in pending:
                     remaining = min(cfg.budget_per_invocation - spent_now,
                                     cfg.budget_per_day - store.spent_today())
                     if remaining <= 0.01:
-                        print(f"бюджет вичерпано (за запуск ${spent_now:.2f}, за день ${store.spent_today():.2f})",
+                        print(f"budget exhausted (this invocation ${spent_now:.2f}, today ${store.spent_today():.2f})",
                               file=sys.stderr)
                         return 2
-                    print(f"  [прогін] {ref} ({commit[:8]}) × {prof.name}, моки: {', '.join(mocked) or '-'}, "
-                          f"ліміт ${remaining:.2f}")
+                    print(f"  [run] {ref} ({commit[:8]}) × {prof.name}, mocks: {', '.join(mocked) or '-'}, "
+                          f"limit ${remaining:.2f}")
                     d = store.run_dir(key)
                     d.mkdir(parents=True, exist_ok=True)
                     out = d / "aggregate.json"
                     code = run_one(cfg, plug, plugin_dir, prof, runs, tags, args.case, remaining, out, args.keep_temp)
                     if not out.is_file():
-                        print(f"    claude plugin eval завершився з кодом {code} без результату", file=sys.stderr)
+                        print(f"    claude plugin eval exited with code {code} and no result", file=sys.stderr)
                         continue
                     s = aggregate.summary(aggregate.load(out))
                     cost = float(s["cost_usd"] or 0)
@@ -167,8 +167,8 @@ def main(argv: List[str]) -> int:
                     db.try_record_run(key)
                     if s["partial"]:
                         if s.get("ungraded"):
-                            print(f"    {s['ungraded']} запусків обірвались на помилці API без оцінювання "
-                                  f"(найчастіше ліміт плану). Прогін не порахується в compare; зупиняюсь.",
+                            print(f"    {s['ungraded']} attempts aborted on an API error without grading "
+                                  f"(usually the plan limit). The run will not count in compare; stopping.",
                                   file=sys.stderr)
                         _refresh_html()
                         return 2
@@ -182,8 +182,8 @@ def _refresh_html() -> None:
     from . import html_report
     try:
         html_report.main([])
-    except Exception as e:  # noqa: BLE001 - звіт не повинен ламати прогін
-        print(f"увага: HTML-звіт не оновлено ({e})", file=sys.stderr)
+    except Exception as e:  # noqa: BLE001 - the report must not break a run
+        print(f"warning: HTML report not updated ({e})", file=sys.stderr)
 
 
 if __name__ == "__main__":

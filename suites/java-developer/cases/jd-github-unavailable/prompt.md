@@ -1,5 +1,5 @@
 ---
-description: 'GitHub MCP повертає помилку: не вигадувати вимоги, попросити текст задачі'
+description: 'GitHub MCP returns an error: do not invent requirements, ask for the issue text'
 tags:
 - incomplete
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Візьми задачу #102.
+Take issue #102.

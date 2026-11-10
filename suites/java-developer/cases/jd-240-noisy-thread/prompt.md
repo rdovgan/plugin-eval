@@ -1,5 +1,5 @@
 ---
-description: '25 коментарів, офтоп, укр/англ: актуальне рішення - 3 кімнати'
+description: '25 comments with off-topic noise: the current decision is 3 rooms'
 tags:
 - noisy
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Треба зробити #240. Там багато обговорення, розберись.
+We need to do #240. There is a lot of discussion there, figure it out.

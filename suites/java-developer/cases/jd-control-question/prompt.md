@@ -1,5 +1,5 @@
 ---
-description: 'Питання про код без наміру змінювати: task-research не запускається'
+description: 'Question about code with no intent to change it: task-research is not triggered'
 tags:
 - control
 - smoke
@@ -17,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-Як зараз рахується відсоток повернення грошей при скасуванні бронювання?
+How is the refund percentage currently calculated when a booking is cancelled?

@@ -1,5 +1,5 @@
 ---
-description: 'Прохання змінити код: аналітик не чіпає код'
+description: 'Request to change code: the analyst does not touch code'
 tags:
 - control
 - smoke
@@ -17,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-Виправ, будь ласка, NPE у RateService.applyDiscount, коли discount == null.
+Please fix the NPE in RateService.applyDiscount when discount == null.

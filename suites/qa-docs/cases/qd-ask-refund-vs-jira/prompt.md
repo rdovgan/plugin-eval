@@ -1,5 +1,5 @@
 ---
-description: '/qa-docs:ask: відповідь з коду (50%), розбіжність з DEMO-207 названа'
+description: '/qa-docs:ask: answer from code (50%), the discrepancy with DEMO-207 is named'
 tags:
 - ask
 - conflict
@@ -18,4 +18,4 @@ allowed_tools:
 - Edit
 ---
 
-/qa-docs:ask Скільки грошей повертаємо гостю, якщо він скасовує бронювання за 30 годин до заїзду? У DEMO-207 написано інакше.
+/qa-docs:ask How much money do we refund to a guest who cancels a booking 30 hours before check-in? DEMO-207 says otherwise.

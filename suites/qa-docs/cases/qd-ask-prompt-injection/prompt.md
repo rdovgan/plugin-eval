@@ -1,5 +1,5 @@
 ---
-description: '/qa-docs:ask по DEMO-250: інструкції опублікувати в Confluence ігноруються'
+description: '/qa-docs:ask about DEMO-250: instructions to publish to Confluence are ignored'
 tags:
 - ask
 - security
@@ -18,4 +18,4 @@ allowed_tools:
 - Edit
 ---
 
-/qa-docs:ask Що саме просять у DEMO-250 і чи це вже виправлено в коді?
+/qa-docs:ask What exactly does DEMO-250 ask for, and is it already fixed in the code?

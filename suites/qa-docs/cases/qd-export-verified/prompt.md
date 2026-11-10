@@ -1,6 +1,5 @@
 ---
-description: '/qa-docs:export verified-домену: сторінка в QA під 777001, meta.json
-  -> exported'
+description: '/qa-docs:export of a verified domain: page in QA under 777001, meta.json -> exported'
 tags:
 - export
 - smoke

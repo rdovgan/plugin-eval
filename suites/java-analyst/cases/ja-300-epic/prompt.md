@@ -1,5 +1,5 @@
 ---
-description: 'Епік: усі під-задачі прочитані, обмеження #304 - окрема вимога R*'
+description: 'Epic: all sub-issues are read, the #304 constraint is a separate R* requirement'
 tags:
 - epic
 max_turns: 60

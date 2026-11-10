@@ -1,11 +1,11 @@
-"""Інтерактивний HTML-звіт по всіх прогонах з results/ (один самодостатній файл, без CDN).
+"""Interactive HTML report over all runs in results/ (one self-contained file, no CDN).
 
     python -m evalkit.html_report                    # -> reports/index.html
     python -m evalkit.html_report --out /tmp/r.html --open
 
-Що в ньому: фільтри (плагін, модель, прогін), плитки з головними цифрами, бали кейсів з точками
-повторів, вартість і ходи по кейсах, тренд по прогонах, порівняння двох прогонів з бутстреп-інтервалом,
-таблиця кейсів з вердиктами кожного грейдера в кожному повторі.
+What it contains: filters (plugin, model, run), tiles with the headline numbers, case scores with attempt
+dots, cost and turns per case, a trend across runs, a comparison of two runs with a bootstrap interval,
+and a table of cases with every grader's verdict in every attempt.
 """
 from __future__ import annotations
 
@@ -99,20 +99,20 @@ def render(data: Dict[str, Any]) -> str:
 def main(argv: List[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--out", default=str(REPORTS / "index.html"))
-    p.add_argument("--open", action="store_true", help="відкрити у браузері")
+    p.add_argument("--open", action="store_true", help="open in the browser")
     args = p.parse_args(argv)
     data = collect()
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(render(data), encoding="utf-8")
-    print(f"звіт: {out}  (прогонів: {len(data['runs'])})")
+    print(f"report: {out}  (runs: {len(data['runs'])})")
     if args.open:
         subprocess.run(["open", str(out)], check=False)
     return 0
 
 
 TEMPLATE = r"""<!doctype html>
-<html lang="uk">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -214,59 +214,59 @@ tbody tr.case:hover { background: var(--wash); cursor: pointer; }
 <main>
   <header>
     <div>
-      <h1>Plugin eval: результати прогонів</h1>
+      <h1>Plugin eval: run results</h1>
       <div class="sub" id="gen"></div>
     </div>
-    <button id="theme" type="button" title="Світла / темна тема">Тема: авто</button>
+    <button id="theme" type="button" title="Light / dark theme">Theme: auto</button>
   </header>
 
   <div class="filters">
-    <label>Плагін <select id="f-plugin"></select></label>
-    <label>Модель <select id="f-model"></select></label>
-    <label>Прогін <select id="f-run"></select></label>
-    <label class="check"><input type="checkbox" id="f-debug"> налагоджувальні (--case)</label>
+    <label>Plugin <select id="f-plugin"></select></label>
+    <label>Model <select id="f-model"></select></label>
+    <label>Run <select id="f-run"></select></label>
+    <label class="check"><input type="checkbox" id="f-debug"> debug runs (--case)</label>
   </div>
 
   <div id="banner"></div>
   <div class="tiles" id="tiles"></div>
 
   <section class="card">
-    <h2>Бал кейсів</h2>
-    <div class="sub">Смуга - середній бал кейсу (0-1), точки - окремі повтори. Порожнє коло з хрестиком - повтор обірвався до оцінювання.</div>
+    <h2>Case scores</h2>
+    <div class="sub">The bar is the case's mean score (0-1), dots are individual attempts. An empty circle with a cross is an attempt that aborted before grading.</div>
     <div class="chart" id="c-cases"></div>
   </section>
 
   <div class="grid2">
-    <section class="card"><h2>Вартість на повтор, $</h2><div class="sub">Оцінка CLI за прайсом, з judge</div><div class="chart" id="c-cost"></div></section>
-    <section class="card"><h2>Ходи агента на повтор</h2><div class="sub">Середнє по повторах; риска - ліміт max_turns</div><div class="chart" id="c-turns"></div></section>
+    <section class="card"><h2>Cost per attempt, $</h2><div class="sub">CLI estimate at list prices, including the judge</div><div class="chart" id="c-cost"></div></section>
+    <section class="card"><h2>Agent turns per attempt</h2><div class="sub">Mean over attempts; the tick is the max_turns limit</div><div class="chart" id="c-turns"></div></section>
   </div>
 
   <section class="card">
-    <h2>Тренд по прогонах</h2>
-    <div class="sub">Загальний бал повних прогонів плагіна (без --case, без недійсних), лінія на модель</div>
+    <h2>Trend across runs</h2>
+    <div class="sub">Overall score of the plugin's full runs (no --case, no invalid ones), one line per model</div>
     <div class="legend" id="l-trend"></div>
     <div class="chart" id="c-trend"></div>
   </section>
 
   <section class="card">
-    <h2>Порівняння двох прогонів</h2>
+    <h2>Comparison of two runs</h2>
     <div class="filters" style="margin:8px 0">
-      <label>Базовий прогін (A) <select id="f-base"></select></label>
-      <div class="sub" style="padding-bottom:8px">B - прогін, вибраний угорі</div>
+      <label>Baseline run (A) <select id="f-base"></select></label>
+      <div class="sub" style="padding-bottom:8px">B is the run selected at the top</div>
     </div>
     <div id="cmp-summary"></div>
-    <div class="legend"><span><i class="sw" style="background:var(--pos)"></i>B краще за A</span><span><i class="sw" style="background:var(--neg)"></i>B гірше за A</span></div>
+    <div class="legend"><span><i class="sw" style="background:var(--pos)"></i>B better than A</span><span><i class="sw" style="background:var(--neg)"></i>B worse than A</span></div>
     <div class="chart" id="c-diff"></div>
   </section>
 
   <section class="card">
-    <h2>Кейси</h2>
-    <div class="sub">Клік по рядку - вердикти кожного грейдера в кожному повторі. Клік по заголовку - сортування.</div>
+    <h2>Cases</h2>
+    <div class="sub">Click a row for every grader's verdict in every attempt. Click a header to sort.</div>
     <div class="chips" id="chips"></div>
     <div class="scroll"><table id="t-cases"></table></div>
   </section>
 
-  <div class="foot">Джерело: results/&lt;key&gt;/aggregate.json і manifest.json. Інтервал у порівнянні - перцентильний бутстреп по кейсах (5000 ітерацій, seed 1234); офіційний вердикт дає <code>python -m evalkit.compare</code>.</div>
+  <div class="foot">Source: results/&lt;key&gt;/aggregate.json and manifest.json. The comparison interval is a percentile bootstrap over cases (5000 iterations, seed 1234); the official verdict comes from <code>python -m evalkit.compare</code>.</div>
 </main>
 <div id="tip" role="tooltip"></div>
 
@@ -313,14 +313,14 @@ function svgEl(tag, attrs = {}, parent) {
   return e;
 }
 function text(parent, x, y, s, attrs = {}) { const t = svgEl("text", { x, y, ...attrs }, parent); t.textContent = s; return t; }
-// Горизонтальна смуга з округленим кінцем даних (4px) і прямим кінцем на базовій лінії.
+// Horizontal bar with a rounded data end (4px) and a square end on the baseline.
 function hbar(parent, x0, x1, y, h, fill) {
   const w = Math.max(0, x1 - x0); if (w < 0.5) return null;
   const r = Math.min(4, w, h / 2);
   const d = `M${x0},${y} H${x0 + w - r} Q${x0 + w},${y} ${x0 + w},${y + r} V${y + h - r} Q${x0 + w},${y + h} ${x0 + w - r},${y + h} H${x0} Z`;
   return svgEl("path", { d, fill }, parent);
 }
-function hbarLeft(parent, x1, x0, y, h, fill) {   // смуга, що росте вліво від x0
+function hbarLeft(parent, x1, x0, y, h, fill) {   // bar growing left from x0
   const w = Math.max(0, x0 - x1); if (w < 0.5) return null;
   const r = Math.min(4, w, h / 2);
   const d = `M${x0},${y} H${x1 + r} Q${x1},${y} ${x1},${y + r} V${y + h - r} Q${x1},${y + h} ${x1 + r},${y + h} H${x0} Z`;
@@ -332,7 +332,7 @@ function newSvg(container, height) {
   const svg = svgEl("svg", { width: w, height, viewBox: `0 0 ${w} ${height}`, role: "img" }, container);
   return [svg, w];
 }
-function hit(parent, x, y, w, h, onMove, onClick) {   // зона наведення більша за саму позначку
+function hit(parent, x, y, w, h, onMove, onClick) {   // the hover area is larger than the mark itself
   const r = svgEl("rect", { x, y, width: w, height: h, fill: "transparent" }, parent);
   r.addEventListener("mousemove", onMove); r.addEventListener("mouseleave", hideTip);
   if (onClick) { r.style.cursor = "pointer"; r.addEventListener("click", onClick); }
@@ -345,7 +345,7 @@ function runsFor(plugin, model) {
   return DATA.runs.filter((r) => r.plugin === plugin && r.modelName === model && (state.debug || !r.caseFilter));
 }
 function runLabel(r) {
-  const flags = [r.smoke ? "smoke" : "", r.caseFilter ? "case: " + r.caseFilter : "", r.partial ? "НЕДІЙСНИЙ" : ""].filter(Boolean);
+  const flags = [r.smoke ? "smoke" : "", r.caseFilter ? "case: " + r.caseFilter : "", r.partial ? "INVALID" : ""].filter(Boolean);
   return `${(r.created || "").replace("T", " ").slice(0, 16)} · ${r.ref} (${short(r.commit)})${flags.length ? " · " + flags.join(", ") : ""}`;
 }
 function fillSelect(sel, items, value) {
@@ -356,7 +356,7 @@ function fillSelect(sel, items, value) {
 }
 function current() { return DATA.runs.find((r) => r.key === state.run) || null; }
 
-function latest(runs) {   // останній повний дійсний, інакше останній повний, інакше будь-який
+function latest(runs) {   // latest full valid run, else latest full, else any
   const r = [...runs].reverse();
   return r.find(comparable) || r.find((x) => !x.caseFilter) || r[0] || null;
 }
@@ -368,10 +368,10 @@ function syncFilters() {
   const models = [...new Set(ofPlugin.map((r) => r.modelName))].sort();
   if (!models.includes(state.model)) state.model = (latest(ofPlugin) || {}).modelName;
   state.model = fillSelect($("f-model"), models.map((m) => [m, m]), state.model);
-  // у плагіна є лише налагоджувальні прогони - показати їх, а не порожню сторінку
+  // the plugin has only debug runs - show them instead of an empty page
   if (!state.debug && !runsFor(state.plugin, state.model).length && ofPlugin.length) { state.debug = true; $("f-debug").checked = true; }
   const runs = runsFor(state.plugin, state.model);
-  // за замовчуванням - останній повний дійсний прогін
+  // default: the latest full valid run
   const pref = state.run && runs.some((r) => r.key === state.run) ? state.run
     : ([...runs].reverse().find(comparable) || runs[runs.length - 1] || {}).key;
   state.run = fillSelect($("f-run"), runs.map((r) => [r.key, runLabel(r)]), pref);
@@ -388,12 +388,12 @@ function renderBanner(run) {
   if (!run || !run.partial) return;
   const total = run.cases.reduce((s, c) => s + c.attempts.length, 0);
   const box = document.createElement("div"); box.className = "banner";
-  const icon = document.createElement("span"); icon.className = "icon"; icon.textContent = "⚠ Недійсний прогін";
+  const icon = document.createElement("span"); icon.className = "icon"; icon.textContent = "⚠ Invalid run";
   const msg = document.createElement("div");
   const errs = [...new Set(run.cases.flatMap((c) => c.attempts.filter((a) => a.ungraded).map((a) => a.error)))];
   msg.textContent = run.ungraded
-    ? `${run.ungraded} із ${total} повторів обірвались до оцінювання й отримали 0 автоматично. Бал прогону не відображає якість плагіна і не бере участі в порівнянні. Причина: ${errs.slice(0, 2).join("; ")}`
-    : `Прогін не завершився (${run.partialReason || "partial"}). Він не бере участі в порівнянні.`;
+    ? `${run.ungraded} of ${total} attempts aborted before grading and got 0 automatically. The run score does not reflect plugin quality and is excluded from comparison. Reason: ${errs.slice(0, 2).join("; ")}`
+    : `The run did not finish (${run.partialReason || "partial"}). It is excluded from comparison.`;
   box.append(icon, msg); b.append(box);
 }
 function tile(k, v, n, cls) {
@@ -410,23 +410,23 @@ function renderTiles(run) {
   const att = run.cases.flatMap((c) => c.attempts);
   const passed = att.filter((a) => a.passed).length;
   t.append(
-    tile("Загальний бал", fmt(run.overall), "середнє по кейсах, 0-1"),
-    tile("Кейсів пройдено", `${run.casesPassed ?? "—"} / ${run.casesTotal ?? "—"}`, "бал кейсу = 1.0"),
-    tile("Повторів пройдено", `${passed} / ${att.length}`, `${run.runsPerCase} повтори на кейс`),
-    tile("Вартість", money(run.cost), "оцінка CLI за прайсом"),
-    tile("Тривалість", run.duration ? `${Math.round(run.duration / 60)} хв` : "—", `${run.claude} · ${run.model}`),
-    tile("Неоцінені повтори", `${run.ungraded}`, run.ungraded ? "✗ помилка API / ліміт" : "✓ усі оцінені", run.ungraded ? "bad" : "ok"),
+    tile("Overall score", fmt(run.overall), "mean over cases, 0-1"),
+    tile("Cases passed", `${run.casesPassed ?? "—"} / ${run.casesTotal ?? "—"}`, "case score = 1.0"),
+    tile("Attempts passed", `${passed} / ${att.length}`, `${run.runsPerCase} attempts per case`),
+    tile("Cost", money(run.cost), "CLI estimate at list prices"),
+    tile("Duration", run.duration ? `${Math.round(run.duration / 60)} min` : "—", `${run.claude} · ${run.model}`),
+    tile("Ungraded attempts", `${run.ungraded}`, run.ungraded ? "✗ API error / limit" : "✓ all graded", run.ungraded ? "bad" : "ok"),
   );
 }
 
 /* ---------- charts ---------- */
 const LABEL_W = 230;
-function caseLabel(c) { return c.name + (c.control ? " · контроль" : ""); }
+function caseLabel(c) { return c.name + (c.control ? " · control" : ""); }
 function caseRows(run) { return [...run.cases].sort((a, b) => a.name.localeCompare(b.name)); }
 
 function renderCases(run) {
   const box = $("c-cases");
-  if (!run) { box.replaceChildren(Object.assign(document.createElement("div"), { className: "empty", textContent: "Немає прогонів" })); return; }
+  if (!run) { box.replaceChildren(Object.assign(document.createElement("div"), { className: "empty", textContent: "No runs" })); return; }
   const rows = caseRows(run), rowH = 28, top = 8, bottom = 26;
   const [svg, W] = newSvg(box, top + rows.length * rowH + bottom);
   const x0 = Math.min(LABEL_W, W * 0.42), x1 = W - 56, sx = (v) => x0 + (x1 - x0) * v;
@@ -451,12 +451,12 @@ function renderCases(run) {
     const ok = c.score === 1;
     text(svg, x1 + 8, mid + 4, `${fmt(c.score)}${ok ? " ✓" : ""}`, { style: `fill:${ok ? css("--good-text") : css("--ink-2")};font-variant-numeric:tabular-nums` });
     hit(svg, 0, y, W, rowH, (ev) => showTip(ev, [
-      ["Бал кейсу", fmt(c.score)],
-      ["Повтори", c.attempts.map((a) => a.ungraded ? "×" : fmt(a.score)).join("  ")],
-      ["Розкид σ", fmt(c.stdev)],
-      ["Ходи (сер.)", fmt(mean(c.attempts.filter((a) => a.turns != null).map((a) => a.turns)), 1)],
-      ["Вартість на повтор", money(mean(c.attempts.filter((a) => a.cost != null).map((a) => a.cost + (a.judgeCost || 0))))],
-      ["Не пройшли", [...new Set(c.attempts.flatMap((a) => a.graders.filter((g) => g.scored !== false && !g.passed).map((g) => g.name)))].join(", ") || "—"],
+      ["Case score", fmt(c.score)],
+      ["Attempts", c.attempts.map((a) => a.ungraded ? "×" : fmt(a.score)).join("  ")],
+      ["Spread σ", fmt(c.stdev)],
+      ["Turns (avg)", fmt(mean(c.attempts.filter((a) => a.turns != null).map((a) => a.turns)), 1)],
+      ["Cost per attempt", money(mean(c.attempts.filter((a) => a.cost != null).map((a) => a.cost + (a.judgeCost || 0))))],
+      ["Failed", [...new Set(c.attempts.flatMap((a) => a.graders.filter((g) => g.scored !== false && !g.passed).map((g) => g.name)))].join(", ") || "—"],
     ], c.name), () => toggleCase(c.name, true));
   });
 }
@@ -480,7 +480,7 @@ function renderMetric(boxId, run, valueOf, fmtv, limitOf) {
     const lim = limitOf && limitOf(c);
     if (lim) svgEl("line", { x1: sx(lim), x2: sx(lim), y1: mid - 7, y2: mid + 7, stroke: css("--ink-2"), "stroke-width": 2 }, svg);
     text(svg, x1 + 14, mid + 4, v == null ? "—" : fmtv(v), { style: "font-variant-numeric:tabular-nums" });
-    hit(svg, 0, y, W, rowH, (ev) => showTip(ev, [["Середнє", v == null ? "—" : fmtv(v)], ...(lim ? [["max_turns", String(lim)]] : [])], c.name));
+    hit(svg, 0, y, W, rowH, (ev) => showTip(ev, [["Mean", v == null ? "—" : fmtv(v)], ...(lim ? [["max_turns", String(lim)]] : [])], c.name));
   });
 }
 
@@ -488,10 +488,10 @@ function renderTrend() {
   const box = $("c-trend"), legend = $("l-trend");
   legend.replaceChildren();
   const runs = DATA.runs.filter((r) => r.plugin === state.plugin && comparable(r));
-  const models = [...new Set(runs.map((r) => r.modelName))].sort().slice(0, 3);   // ≤3 серії: перевірена частина палітри
+  const models = [...new Set(runs.map((r) => r.modelName))].sort().slice(0, 3);   // ≤3 series: the validated part of the palette
   if (runs.length < 2) {
     box.replaceChildren(Object.assign(document.createElement("div"), { className: "empty",
-      textContent: runs.length ? "Поки один повний дійсний прогін - тренд з'явиться після другого." : "Немає повних дійсних прогонів цього плагіна." }));
+      textContent: runs.length ? "Only one full valid run so far - the trend appears after the second." : "No full valid runs for this plugin." }));
     return;
   }
   const colors = ["--s1", "--s2", "--s3"].map(css);
@@ -520,7 +520,7 @@ function renderTrend() {
     const i = Math.max(0, Math.min(n - 1, Math.round((ev.clientX - rect.left - left) / ((right - left) / Math.max(1, n - 1)))));
     cross.setAttribute("x1", sx(i)); cross.setAttribute("x2", sx(i)); cross.setAttribute("visibility", "visible");
     const r = runs[i];
-    showTip(ev, [["Модель", r.modelName], ["Бал", fmt(r.overall)], ["Кейсів пройдено", `${r.casesPassed}/${r.casesTotal}`], ["Вартість", money(r.cost)], ["Набір", r.suite]], `${r.ref} (${short(r.commit)}) · ${(r.created || "").slice(0, 10)}`);
+    showTip(ev, [["Model", r.modelName], ["Score", fmt(r.overall)], ["Cases passed", `${r.casesPassed}/${r.casesTotal}`], ["Cost", money(r.cost)], ["Suite", r.suite]], `${r.ref} (${short(r.commit)}) · ${(r.created || "").slice(0, 10)}`);
   }).addEventListener("mouseleave", () => cross.setAttribute("visibility", "hidden"));
 }
 
@@ -537,23 +537,23 @@ function renderCompare(run) {
   box.replaceChildren(); sum.replaceChildren();
   const base = DATA.runs.find((r) => r.key === state.base);
   const say = (s) => sum.append(Object.assign(document.createElement("div"), { className: "empty", textContent: s }));
-  if (!run || !base) return say("Виберіть базовий прогін A того самого плагіна і моделі.");
+  if (!run || !base) return say("Select a baseline run A of the same plugin and model.");
   const notes = [];
-  if (run.partial || base.partial) notes.push("один з прогонів недійсний (неоцінені повтори) - результат лише орієнтовний");
-  if (run.suite !== base.suite) notes.push(`різні набори кейсів (${base.suite} проти ${run.suite})`);
-  if (run.claude !== base.claude) notes.push(`різні версії Claude Code (${base.claude} проти ${run.claude})`);
+  if (run.partial || base.partial) notes.push("one of the runs is invalid (ungraded attempts) - the result is indicative only");
+  if (run.suite !== base.suite) notes.push(`different case suites (${base.suite} vs ${run.suite})`);
+  if (run.claude !== base.claude) notes.push(`different Claude Code versions (${base.claude} vs ${run.claude})`);
   const A = Object.fromEntries(base.cases.map((c) => [c.name, c])), B = Object.fromEntries(run.cases.map((c) => [c.name, c]));
   const rows = Object.keys(B).filter((k) => A[k] && A[k].score != null && B[k].score != null).sort()
     .map((k) => ({ name: k, a: A[k].score, b: B[k].score, d: B[k].score - A[k].score, control: B[k].control }));
-  if (!rows.length) return say("Немає спільних кейсів.");
+  if (!rows.length) return say("No cases in common.");
   const diffs = rows.map((r) => r.d), [lo, hi] = bootstrap(diffs), m = mean(diffs);
   const ctrl = rows.filter((r) => r.control && r.d < 0).map((r) => r.name);
-  const verdict = lo > 0 && !ctrl.length ? ["краще", "ok", "▲"] : hi < 0 ? ["гірше", "bad", "▼"] : ["не доведено", "na", "●"];
+  const verdict = lo > 0 && !ctrl.length ? ["better", "ok", "▲"] : hi < 0 ? ["worse", "bad", "▼"] : ["inconclusive", "na", "●"];
   const v = document.createElement("div"); v.className = "verdict";
   v.innerHTML = `<span class="big status ${verdict[1]}"></span><span></span><span class="sub"></span>`;
   v.children[0].textContent = `${verdict[2]} ${verdict[0]}`;
   v.children[1].textContent = `Δ ${m >= 0 ? "+" : ""}${fmt(m, 3)} · 95% CI [${fmt(lo, 3)}, ${fmt(hi, 3)}] · n=${rows.length}`;
-  v.children[2].textContent = `вартість ${money(base.cost)} → ${money(run.cost)}${ctrl.length ? " · погіршились контрольні: " + ctrl.join(", ") : ""}`;
+  v.children[2].textContent = `cost ${money(base.cost)} → ${money(run.cost)}${ctrl.length ? " · regressed control cases: " + ctrl.join(", ") : ""}`;
   sum.append(v);
   for (const nte of notes) sum.append(Object.assign(document.createElement("div"), { className: "err", textContent: "⚠ " + nte }));
   const rowH = 24, top = 6, bottom = 24;
@@ -565,7 +565,7 @@ function renderCompare(run) {
   }
   rows.forEach((r, i) => {
     const y = top + i * rowH, mid = y + rowH / 2;
-    text(svg, x0 - 8, mid + 4, r.name + (r.control ? " · контроль" : ""), { "text-anchor": "end" });
+    text(svg, x0 - 8, mid + 4, r.name + (r.control ? " · control" : ""), { "text-anchor": "end" });
     if (r.d > 0) hbar(svg, zero, sx(r.d), mid - 5, 10, css("--pos"));
     else if (r.d < 0) hbarLeft(svg, sx(r.d), zero, mid - 5, 10, css("--neg"));
     else svgEl("circle", { cx: zero, cy: mid, r: 3, fill: css("--muted") }, svg);
@@ -576,8 +576,8 @@ function renderCompare(run) {
 
 /* ---------- table ---------- */
 const COLS = [
-  ["name", "Кейс", false], ["score", "Бал", true], ["attempts", "Повтори", false], ["stdev", "σ", true],
-  ["turns", "Ходи", true], ["cost", "$ / повтор", true], ["duration", "с / повтор", true], ["ungraded", "Неоцінені", true],
+  ["name", "Case", false], ["score", "Score", true], ["attempts", "Attempts", false], ["stdev", "σ", true],
+  ["turns", "Turns", true], ["cost", "$ / attempt", true], ["duration", "s / attempt", true], ["ungraded", "Ungraded", true],
 ];
 function caseMetrics(c) {
   const ok = c.attempts.filter((a) => !a.ungraded);
@@ -592,9 +592,9 @@ function toggleCase(name, scroll) {
 }
 function dotFor(a) {
   const d = document.createElement("span"); d.className = "dot";
-  if (a.ungraded) { d.style.border = `1.5px solid ${css("--critical")}`; d.title = `повтор ${a.no}: не оцінено (${a.error})`; }
-  else if (a.passed) { d.style.background = css("--good"); d.title = `повтор ${a.no}: пройшов (${fmt(a.score)})`; }
-  else { d.style.background = css("--critical"); d.title = `повтор ${a.no}: ${fmt(a.score)}`; }
+  if (a.ungraded) { d.style.border = `1.5px solid ${css("--critical")}`; d.title = `attempt ${a.no}: not graded (${a.error})`; }
+  else if (a.passed) { d.style.background = css("--good"); d.title = `attempt ${a.no}: passed (${fmt(a.score)})`; }
+  else { d.style.background = css("--critical"); d.title = `attempt ${a.no}: ${fmt(a.score)}`; }
   return d;
 }
 function renderChips(run) {
@@ -603,7 +603,7 @@ function renderChips(run) {
   const tags = [...new Set(run.cases.flatMap((c) => c.tags))].sort();
   for (const t of [null, ...tags]) {
     const b = document.createElement("button"); b.type = "button"; b.className = "chip";
-    b.textContent = t === null ? "усі" : t; b.setAttribute("aria-pressed", String(state.tag === t));
+    b.textContent = t === null ? "all" : t; b.setAttribute("aria-pressed", String(state.tag === t));
     b.addEventListener("click", () => { state.tag = t; renderChips(run); renderTable(run); });
     box.append(b);
   }
@@ -647,13 +647,13 @@ function renderDetails(tb, c) {
   td.append(Object.assign(document.createElement("div"), { className: "desc", textContent: c.description }));
   td.append(Object.assign(document.createElement("pre"), { textContent: c.prompt }));
   for (const a of c.attempts.filter((x) => x.error))
-    td.append(Object.assign(document.createElement("div"), { className: "err", textContent: `✗ повтор ${a.no}: ${a.error}${a.ungraded ? " (не оцінено)" : ""}` }));
+    td.append(Object.assign(document.createElement("div"), { className: "err", textContent: `✗ attempt ${a.no}: ${a.error}${a.ungraded ? " (not graded)" : ""}` }));
   const names = [...new Set(c.attempts.flatMap((a) => a.graders.map((g) => g.name)))].sort();
   if (!names.length) return;
   const wrap = document.createElement("div"); wrap.className = "scroll";
   const g = document.createElement("table"); g.className = "gtable";
   const h = g.createTHead().insertRow();
-  for (const s of ["Грейдер", "Тип", "Вага", ...c.attempts.map((a) => `Повтор ${a.no}`)]) h.append(Object.assign(document.createElement("th"), { textContent: s }));
+  for (const s of ["Grader", "Type", "Weight", ...c.attempts.map((a) => `Attempt ${a.no}`)]) h.append(Object.assign(document.createElement("th"), { textContent: s }));
   const body = g.createTBody();
   for (const n of names) {
     const r = body.insertRow();
@@ -664,9 +664,9 @@ function renderDetails(tb, c) {
     for (const a of c.attempts) {
       const cell = r.insertCell(), gr = a.graders.find((x) => x.name === n);
       const st = document.createElement("div");
-      if (!gr) { st.className = "status na"; st.textContent = a.ungraded ? "не оцінено" : "—"; }
-      else if (gr.scored === false) { st.className = "status na"; st.textContent = (gr.passed ? "✓" : "✗") + " індикатор"; }
-      else { st.className = "status " + (gr.passed ? "ok" : "bad"); st.textContent = gr.passed ? "✓ так" : "✗ ні"; }
+      if (!gr) { st.className = "status na"; st.textContent = a.ungraded ? "not graded" : "—"; }
+      else if (gr.scored === false) { st.className = "status na"; st.textContent = (gr.passed ? "✓" : "✗") + " indicator"; }
+      else { st.className = "status " + (gr.passed ? "ok" : "bad"); st.textContent = gr.passed ? "✓ yes" : "✗ no"; }
       cell.append(st);
       if (gr && gr.explanation) cell.append(Object.assign(document.createElement("div"), { className: "expl", textContent: gr.explanation.length > 160 ? gr.explanation.slice(0, 160) + "…" : gr.explanation, title: gr.explanation }));
     }
@@ -678,7 +678,7 @@ function renderDetails(tb, c) {
 function renderAll() {
   syncFilters();
   const run = current();
-  $("gen").textContent = `Згенеровано ${DATA.generated.replace("T", " ")} · прогонів у results/: ${DATA.runs.length}`;
+  $("gen").textContent = `Generated ${DATA.generated.replace("T", " ")} · runs in results/: ${DATA.runs.length}`;
   renderBanner(run); renderTiles(run); renderCases(run);
   renderMetric("c-cost", run, (a) => a.cost == null ? null : a.cost + (a.judgeCost || 0), (v) => "$" + v.toFixed(v < 0.1 ? 3 : 2));
   renderMetric("c-turns", run, (a) => a.turns, (v) => v.toFixed(0), (c) => c.maxTurns);
@@ -689,13 +689,13 @@ $("f-model").addEventListener("change", (e) => { state.model = e.target.value; s
 $("f-run").addEventListener("change", (e) => { state.run = e.target.value; state.base = null; renderAll(); });
 $("f-base").addEventListener("change", (e) => { state.base = e.target.value; renderCompare(current()); });
 $("f-debug").addEventListener("change", (e) => { state.debug = e.target.checked; renderAll(); });
-const THEMES = [["auto", null], ["світла", "light"], ["темна", "dark"]];
+const THEMES = [["auto", null], ["light", "light"], ["dark", "dark"]];
 let themeIdx = 0;
 try { const saved = localStorage.getItem("pe-theme"); const i = THEMES.findIndex(([, v]) => v === saved); if (i > 0) themeIdx = i; } catch (e) {}
 function applyTheme() {
   const v = THEMES[themeIdx][1];
   if (v) document.documentElement.dataset.theme = v; else delete document.documentElement.dataset.theme;
-  $("theme").textContent = "Тема: " + THEMES[themeIdx][0];
+  $("theme").textContent = "Theme: " + THEMES[themeIdx][0];
   try { v ? localStorage.setItem("pe-theme", v) : localStorage.removeItem("pe-theme"); } catch (e) {}
 }
 $("theme").addEventListener("click", () => { themeIdx = (themeIdx + 1) % THEMES.length; applyTheme(); renderAll(); });

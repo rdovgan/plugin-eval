@@ -1,15 +1,15 @@
-"""Запис результатів у MariaDB (необов'язково: без PE_DB_URL усе працює на файлах).
+"""Writes results to MariaDB (optional: without PE_DB_URL everything works on files).
 
-Джерело правди - results/<key>/{manifest,aggregate}.json; база - індекс для запитів і трендів,
-її завжди можна перебудувати командою import.
+The source of truth is results/<key>/{manifest,aggregate}.json; the database is an index for queries and
+trends that can always be rebuilt with the import command.
 
-    python -m evalkit.db init      # створити або оновити таблиці
-    python -m evalkit.db import    # записати всі прогони з results/ (повторний запуск безпечний)
-    python -m evalkit.db status    # кількість рядків і останні прогони
+    python -m evalkit.db init      # create or update the tables
+    python -m evalkit.db import    # write all runs from results/ (safe to re-run)
+    python -m evalkit.db status    # row counts and the latest runs
 
-Змінні (.env або оточення):
+Variables (.env or environment):
     PE_DB_URL=mysql://user:password@127.0.0.1:3307/plugin_eval
-    PE_DB_SSH=-p 2222 root@dovg.cloud     # якщо задано і порт закритий, відкривається SSH-тунель
+    PE_DB_SSH=-p 22 user@db-host.example.com   # if set and the port is closed, an SSH tunnel is opened
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ from urllib.parse import unquote
 from .config import ROOT, load_dotenv
 from . import store
 
-# ---------- схема ----------
+# ---------- schema ----------
 
 MIGRATIONS: List[Tuple[int, List[str]]] = [
     (1, [
@@ -144,7 +144,7 @@ MIGRATIONS: List[Tuple[int, List[str]]] = [
             CONSTRAINT fk_cmp_a FOREIGN KEY (run_key_a) REFERENCES runs (run_key),
             CONSTRAINT fk_cmp_b FOREIGN KEY (run_key_b) REFERENCES runs (run_key)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci""",
-        # Останній бал кожного кейсу по комітах: основа для графіків трендів.
+        # Latest score of each case per commit: the basis for trend charts.
         """CREATE OR REPLACE VIEW case_trend AS
             SELECT r.plugin, r.model_name, r.ref, r.commit_sha, r.created_at, r.suite_hash, r.smoke,
                    c.case_name, c.is_control, c.score, c.stdev, c.attempts, c.errors
@@ -154,7 +154,7 @@ MIGRATIONS: List[Tuple[int, List[str]]] = [
 ]
 
 
-# ---------- підключення ----------
+# ---------- connection ----------
 
 def _env() -> Dict[str, str]:
     return {**load_dotenv(ROOT / ".env"), **os.environ}
@@ -167,7 +167,7 @@ def configured() -> bool:
 def parse_url(url: str) -> Dict[str, Any]:
     m = re.fullmatch(r"(?:mysql|mariadb)://([^:@/]+):([^@]*)@([^:/]+)(?::(\d+))?/(\w+)", url.strip())
     if not m:
-        raise SystemExit("PE_DB_URL має бути у форматі mysql://user:password@host:port/database")
+        raise SystemExit("PE_DB_URL must have the form mysql://user:password@host:port/database")
     return {"user": unquote(m[1]), "password": unquote(m[2]), "host": m[3],
             "port": int(m[4] or 3306), "database": m[5]}
 
@@ -184,7 +184,7 @@ _tunnel: Optional[subprocess.Popen] = None
 
 
 def _ensure_tunnel(params: Dict[str, Any], ssh_target: str) -> None:
-    """Відкриває ssh -L, якщо локальний порт закритий; закривається при виході з процесу."""
+    """Opens ssh -L if the local port is closed; it is closed when the process exits."""
     global _tunnel
     host, port = params["host"], params["port"]
     if host not in ("127.0.0.1", "localhost") or _port_open(host, port) or not ssh_target:
@@ -198,9 +198,9 @@ def _ensure_tunnel(params: Dict[str, Any], ssh_target: str) -> None:
         if _port_open(host, port):
             return
         if _tunnel.poll() is not None:
-            raise RuntimeError(f"SSH-тунель не відкрився: {_tunnel.stderr.read().decode().strip()}")
+            raise RuntimeError(f"SSH tunnel did not open: {_tunnel.stderr.read().decode().strip()}")
         time.sleep(0.2)
-    raise RuntimeError("SSH-тунель не відкрився за 10 с")
+    raise RuntimeError("SSH tunnel did not open within 10 s")
 
 
 def _close_tunnel() -> None:
@@ -216,11 +216,11 @@ def _close_tunnel() -> None:
 
 @contextmanager
 def connect() -> Iterator[Any]:
-    import pymysql  # імпорт тут: без бази драйвер не потрібен
+    import pymysql  # imported here: the driver is not needed without a database
 
     env = _env()
     if not env.get("PE_DB_URL"):
-        raise SystemExit("PE_DB_URL не задано (.env або оточення)")
+        raise SystemExit("PE_DB_URL is not set (.env or environment)")
     params = parse_url(env["PE_DB_URL"])
     _ensure_tunnel(params, env.get("PE_DB_SSH", ""))
     conn = pymysql.connect(**params, charset="utf8mb4", autocommit=False, connect_timeout=10)
@@ -241,7 +241,7 @@ def migrate(conn: Any) -> List[int]:
         for version, statements in MIGRATIONS:
             if version in done:
                 continue
-            for sql in statements:   # DDL у MariaDB комітиться неявно: кожна міграція має бути повторюваною
+            for sql in statements:   # DDL in MariaDB commits implicitly: every migration must be re-runnable
                 cur.execute(sql)
             cur.execute("INSERT INTO schema_migrations (version) VALUES (%s)", (version,))
             applied.append(version)
@@ -249,7 +249,7 @@ def migrate(conn: Any) -> List[int]:
     return applied
 
 
-# ---------- запис ----------
+# ---------- writing ----------
 
 def _ts(v: Optional[str]) -> Optional[dt.datetime]:
     if not v:
@@ -288,7 +288,7 @@ def _insert(cur: Any, table: str, row: Dict[str, Any], upsert: bool = False) -> 
 
 
 def record_run(conn: Any, key: str) -> None:
-    """Записує один прогін з results/<key>/ (замінює попередній запис з тим самим ключем)."""
+    """Writes one run from results/<key>/ (replaces the previous record with the same key)."""
     from . import aggregate
 
     d = store.run_dir(key)
@@ -297,7 +297,7 @@ def record_run(conn: Any, key: str) -> None:
     tags = {c["name"]: c.get("tags") or [] for c in m.get("cases") or []}
     scores = aggregate.case_scores(agg)
     with conn.cursor() as cur:
-        cur.execute("DELETE FROM runs WHERE run_key = %s", (key,))   # каскадно чистить кейси/спроби/грейдери
+        cur.execute("DELETE FROM runs WHERE run_key = %s", (key,))   # cascades to cases/attempts/graders
         _insert(cur, "runs", _run_row(key, m, agg, d))
         for case in agg.get("cases") or []:
             name = case["name"]
@@ -352,7 +352,7 @@ def record_comparison(conn: Any, plugin: str, model: str, ref_a: str, ref_b: str
     conn.commit()
 
 
-# ---------- виклики з run/compare: база не повинна ламати прогін ----------
+# ---------- calls from run/compare: the database must not break a run ----------
 
 def try_record_run(key: str) -> None:
     if not configured():
@@ -361,9 +361,9 @@ def try_record_run(key: str) -> None:
         with connect() as conn:
             migrate(conn)
             record_run(conn, key)
-        print(f"    записано в MariaDB: runs.{key}")
-    except Exception as e:  # noqa: BLE001 - файли вже записані, базу можна дописати через import
-        print(f"    увага: не вдалося записати в MariaDB ({e}); потім: python -m evalkit.db import", file=sys.stderr)
+        print(f"    written to MariaDB: runs.{key}")
+    except Exception as e:  # noqa: BLE001 - files are already written, the database can be filled later via import
+        print(f"    warning: could not write to MariaDB ({e}); later run: python -m evalkit.db import", file=sys.stderr)
 
 
 def try_record_comparison(*args: Any, **kwargs: Any) -> None:
@@ -372,12 +372,12 @@ def try_record_comparison(*args: Any, **kwargs: Any) -> None:
     try:
         with connect() as conn:
             migrate(conn)
-            for m in (args[4], args[5]):                 # обидва прогони мають бути в базі
+            for m in (args[4], args[5]):                 # both runs must be in the database
                 record_run(conn, Path(m["_dir"]).name)
             record_comparison(conn, *args, **kwargs)
-        print("записано в MariaDB: comparisons")
+        print("written to MariaDB: comparisons")
     except Exception as e:  # noqa: BLE001
-        print(f"увага: не вдалося записати порівняння в MariaDB ({e})", file=sys.stderr)
+        print(f"warning: could not write the comparison to MariaDB ({e})", file=sys.stderr)
 
 
 # ---------- CLI ----------
@@ -389,13 +389,13 @@ def main(argv: List[str]) -> int:
     with connect() as conn:
         applied = migrate(conn)
         if args.cmd == "init":
-            print(f"міграції застосовано: {applied or 'нічого нового'}")
+            print(f"migrations applied: {applied or 'nothing new'}")
         elif args.cmd == "import":
             keys = [Path(m["_dir"]).name for m in store.manifests()]
             for k in keys:
                 record_run(conn, k)
                 print(f"  {k}")
-            print(f"записано прогонів: {len(keys)}")
+            print(f"runs written: {len(keys)}")
         with conn.cursor() as cur:
             for t in ("runs", "case_results", "attempts", "grader_results", "comparisons"):
                 cur.execute(f"SELECT COUNT(*) FROM {t}")

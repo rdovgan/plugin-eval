@@ -1,5 +1,5 @@
 ---
-description: Тікет (24 год) vs документ і код (48 год) у 01-research.md
+description: 'Ticket (24 h) vs document and code (48 h) in 01-research.md'
 tags:
 - conflict
 max_turns: 60

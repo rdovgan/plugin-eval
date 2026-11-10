@@ -1,5 +1,5 @@
 ---
-description: 'Розмитий тікет без деталей: не вигадувати правило, спитати конкретне'
+description: 'Vague ticket with no details: do not invent a rule, ask something specific'
 tags:
 - vague
 - smoke
@@ -17,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-Подивись #110, клієнти скаржаться, треба швидко поправити.
+Look at #110, customers are complaining, we need a quick fix.

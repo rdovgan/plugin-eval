@@ -1,5 +1,5 @@
 ---
-description: Тікет (24 год) суперечить docs/cancellation-rules.md і коду (48 год)
+description: 'Ticket (24 h) contradicts docs/cancellation-rules.md and the code (48 h)'
 tags:
 - conflict
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Глянь #207, саппорт просить терміново.
+Take a look at #207, support needs it urgently.

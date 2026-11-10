@@ -1,5 +1,5 @@
 ---
-description: Посилання на внутрішню вікі і скріншот недоступні
+description: 'Links to the internal wiki and a screenshot are unavailable'
 tags:
 - incomplete
 max_turns: 40
@@ -16,4 +16,4 @@ allowed_tools:
 - Edit
 ---
 
-Візьми #230.
+Take #230.

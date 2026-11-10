@@ -1,6 +1,5 @@
 ---
-description: 'Чіткий тривіальний баг: triage=trivial, null-check у RateService, без
-  повного циклу'
+description: 'Clear trivial bug: triage=trivial, null check in RateService, no full cycle'
 tags:
 - clear
 - trivial
@@ -19,4 +18,4 @@ allowed_tools:
 - Edit
 ---
 
-Візьми в роботу задачу #101.
+Start working on issue #101.

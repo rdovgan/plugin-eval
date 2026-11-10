@@ -1,5 +1,5 @@
 ---
-description: '/qa-docs:ask: сторінка Confluence недоступна (403) - сказати, не вигадувати'
+description: '/qa-docs:ask: the Confluence page is unavailable (403) - say so, do not make things up'
 tags:
 - ask
 - incomplete
@@ -17,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-/qa-docs:ask Які правила повернення при частковому проживанні? Див. DEMO-230.
+/qa-docs:ask What are the refund rules for a partial stay? See DEMO-230.

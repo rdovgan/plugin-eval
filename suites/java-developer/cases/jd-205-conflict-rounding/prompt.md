@@ -1,6 +1,5 @@
 ---
-description: Опис (floor) суперечить AC (nearest) і ADR 0003 (HALF_EVEN, без округлення
-  до цілих)
+description: 'Description (floor) contradicts AC (nearest) and ADR 0003 (HALF_EVEN, no rounding to whole numbers)'
 tags:
 - conflict
 - smoke
@@ -18,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-Візьми, будь ласка, #205.
+Please take #205.

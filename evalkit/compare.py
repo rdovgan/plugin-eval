@@ -1,12 +1,12 @@
-"""Парне порівняння двох версій плагіна на одній моделі.
+"""Paired comparison of two plugin versions on one model.
 
     python -m evalkit.compare --plugin java-developer --a v0.9.0 --b HEAD --model sonnet
     python -m evalkit.compare --plugin qa-docs --a v0.1.0 --b v0.2.0 --model sonnet --report
 
-Правило вердикту (з документа вимог):
-  краще        — нижня межа 95% інтервалу > 0 і жоден контрольний кейс не погіршився
-  гірше        — верхня межа < 0
-  не доведено  — усе інше
+Verdict rule (from the requirements document):
+  better        — the lower bound of the 95% interval is > 0 and no control case regressed
+  worse         — the upper bound is < 0
+  inconclusive  — everything else
 """
 from __future__ import annotations
 
@@ -19,13 +19,13 @@ from typing import Any, Dict, List, Tuple
 from . import aggregate, store
 
 ITERATIONS = 5000
-SEED = 1234          # фіксований, щоб той самий вхід давав той самий інтервал
+SEED = 1234          # fixed, so the same input gives the same interval
 CONTROL_TAG = "control"
 
 
 def bootstrap_ci(diffs: List[float], iterations: int = ITERATIONS, seed: int = SEED,
                  alpha: float = 0.05) -> Tuple[float, float]:
-    """Перцентильний бутстреп середньої різниці: перевибірка кейсів із поверненням."""
+    """Percentile bootstrap of the mean difference: resampling cases with replacement."""
     if not diffs:
         return (0.0, 0.0)
     rng = random.Random(seed)
@@ -39,14 +39,14 @@ def bootstrap_ci(diffs: List[float], iterations: int = ITERATIONS, seed: int = S
 def verdict(ci: Tuple[float, float], control_regressions: List[str]) -> str:
     lo, hi = ci
     if lo > 0 and not control_regressions:
-        return "краще"
+        return "better"
     if hi < 0:
-        return "гірше"
-    return "не доведено"
+        return "worse"
+    return "inconclusive"
 
 
 def compare(a: Dict[str, Any], b: Dict[str, Any], tags: Dict[str, List[str]]) -> Dict[str, Any]:
-    """a, b — результати aggregate.case_scores; tags — {кейс: [теги]}."""
+    """a, b — results of aggregate.case_scores; tags — {case: [tags]}."""
     common = sorted(set(a) & set(b))
     rows, diffs, control_regressions = [], [], []
     for name in common:
@@ -65,7 +65,7 @@ def compare(a: Dict[str, Any], b: Dict[str, Any], tags: Dict[str, List[str]]) ->
     mean = sum(diffs) / len(diffs) if diffs else 0.0
     return {
         "rows": rows, "mean_diff": mean, "ci": ci,
-        "verdict": verdict(ci, control_regressions) if diffs else "не доведено",
+        "verdict": verdict(ci, control_regressions) if diffs else "inconclusive",
         "control_regressions": control_regressions,
         "only_in_a": sorted(set(a) - set(b)), "only_in_b": sorted(set(b) - set(a)),
         "n": len(diffs),
@@ -76,26 +76,26 @@ def load_pair(plugin: str, ref_a: str, ref_b: str, model: str, smoke: bool, allo
     ma, mb = store.find_latest(plugin, ref_a, model, smoke), store.find_latest(plugin, ref_b, model, smoke)
     for ref, m in ((ref_a, ma), (ref_b, mb)):
         if not m:
-            raise SystemExit(f"немає завершеного прогону {plugin} для {ref} × {model}"
-                             f"{' (smoke)' if smoke else ''}. Спершу: python -m evalkit.run --plugins {plugin} --refs {ref} --models {model}")
+            raise SystemExit(f"no completed run of {plugin} for {ref} × {model}"
+                             f"{' (smoke)' if smoke else ''}. First run: python -m evalkit.run --plugins {plugin} --refs {ref} --models {model}")
     if ma["suite_hash"] != mb["suite_hash"]:
-        raise SystemExit(f"різні набори кейсів: {ma['suite_hash']} проти {mb['suite_hash']}. "
-                         f"Перезапустіть старішу версію на поточних кейсах.")
+        raise SystemExit(f"different case suites: {ma['suite_hash']} vs {mb['suite_hash']}. "
+                         f"Re-run the older version on the current cases.")
     if ma["claude_version"] != mb["claude_version"] and not allow_cli_mismatch:
-        raise SystemExit(f"різні версії Claude Code: {ma['claude_version']} проти {mb['claude_version']} "
-                         f"(--allow-cli-mismatch, якщо свідомо)")
+        raise SystemExit(f"different Claude Code versions: {ma['claude_version']} vs {mb['claude_version']} "
+                         f"(--allow-cli-mismatch if intentional)")
     return ma, mb
 
 
 def main(argv: List[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--plugin", required=True)
-    p.add_argument("--a", required=True, help="базова версія (тег або коміт)")
-    p.add_argument("--b", required=True, help="нова версія")
+    p.add_argument("--a", required=True, help="baseline version (tag or commit)")
+    p.add_argument("--b", required=True, help="new version")
     p.add_argument("--model", required=True)
     p.add_argument("--smoke", action="store_true")
     p.add_argument("--allow-cli-mismatch", action="store_true")
-    p.add_argument("--report", action="store_true", help="записати Markdown у reports/")
+    p.add_argument("--report", action="store_true", help="write Markdown to reports/")
     args = p.parse_args(argv)
 
     ma, mb = load_pair(args.plugin, args.a, args.b, args.model, args.smoke, args.allow_cli_mismatch)
@@ -105,22 +105,22 @@ def main(argv: List[str]) -> int:
     result = compare(sa, sb, tags)
 
     lo, hi = result["ci"]
-    print(f"{args.plugin}: {args.a} -> {args.b} на {args.model}: n={result['n']}  "
+    print(f"{args.plugin}: {args.a} -> {args.b} on {args.model}: n={result['n']}  "
           f"Δ={result['mean_diff']:+.3f}  95% CI [{lo:+.3f}, {hi:+.3f}]  =>  {result['verdict']}")
-    print(f"вартість: ${ma.get('cost_usd') or 0:.2f} -> ${mb.get('cost_usd') or 0:.2f}")
+    print(f"cost: ${ma.get('cost_usd') or 0:.2f} -> ${mb.get('cost_usd') or 0:.2f}")
     if result["control_regressions"]:
-        print("погіршились контрольні: " + ", ".join(result["control_regressions"]))
+        print("regressed control cases: " + ", ".join(result["control_regressions"]))
 
     path = None
     if args.report:
         from . import report
         path = report.write(args.plugin, args.a, args.b, args.model, ma, mb, result)
-        print(f"звіт: {path}")
+        print(f"report: {path}")
     from . import db
     db.try_record_comparison(args.plugin, args.model, args.a, args.b, ma, mb, result, path)
     from . import html_report
     html_report.main([])
-    return {"краще": 0, "не доведено": 0, "гірше": 1}[result["verdict"]]
+    return {"better": 0, "inconclusive": 0, "worse": 1}[result["verdict"]]
 
 
 if __name__ == "__main__":

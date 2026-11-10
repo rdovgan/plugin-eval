@@ -1,5 +1,5 @@
 ---
-description: 'Чітка стандартна фіча з 4 AC: triage=standard, без коду до специфікації'
+description: 'Clear standard feature with 4 AC: triage=standard, no code before the spec'
 tags:
 - clear
 - standard
@@ -17,4 +17,4 @@ allowed_tools:
 - Edit
 ---
 
-Є задача #102, глянь що там і почнемо.
+There is issue #102, see what is in it and let's get started.
